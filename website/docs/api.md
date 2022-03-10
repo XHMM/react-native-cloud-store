@@ -3,26 +3,9 @@ title: API
 sidebar_position: 2
 ---
 
-## Import Statement
+## Module Import
 ```ts
 import * as CloudStore from 'react-native-cloud-store'
-```
-
-## Base API
-
-### `getConstants`
-
-```ts
-function isICloudAvailable(): {
-    // empty string if cannot get
-    "icloudContainerPath": string
-}
-```
-
-### `isICloudAvailable`
-If user's icloud drive not enabled, or user not logged in, this will return `false`
-```ts
-function isICloudAvailable(): Promise<boolean>
 ```
 
 ## ICloud Documents API
@@ -43,7 +26,7 @@ function copyFile(
     // supported format:
     //  - path relative to icloudContainerURL
     //  - file:///xx/yy
-    srURIOrRelativePath: string,
+    srcURIOrRelativePath: string,
     destRelativePath: string,
     options: {override: boolean}
 ): Promise<void>
@@ -131,10 +114,11 @@ function kvGetAllItems(): Promise<Record<string, string>>
 ```jsx
 import { NativeEventEmitter } from 'react-native';
 import { useEffect } from "react";
+import * as CloudStore from 'react-native-cloud-store'
 
 const App = () => {
     useEffect(() => {
-        const event = new NativeEventEmitter(iCloudStorage);
+        const event = new NativeEventEmitter(CloudStore);
         event.addListener('onICloudKVStoreRemoteChanged', (userInfo) => {
            console.log(userInfo.changedKeys)
         });
@@ -146,4 +130,22 @@ const App = () => {
 
     return null
 }
+```
+
+
+## Chores API
+
+### `getConstants`
+
+```ts
+function isICloudAvailable(): {
+    // empty string if cannot get
+    "icloudContainerPath": string
+}
+```
+
+### `isICloudAvailable`
+If user's icloud drive not enabled, or user not logged in, this will return `false`
+```ts
+function isICloudAvailable(): Promise<boolean>
 ```
