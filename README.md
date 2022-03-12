@@ -1,11 +1,11 @@
 # react-native-cloud-store
 
-A ReactNative module for cloud operation (currently only support icloud dirve)
+A react-native module for cloud operations (currently only support iCloud drive)
 
 **Developing, use at your risk, issue and PR is welcome!**
 
 ## Get Started
-Go to [documentation](https://react-native-cloud-store.vercel.app/) for detail.
+[Documentation](https://react-native-cloud-store.vercel.app/docs/get-started)
 
 
 ## Inspiration
