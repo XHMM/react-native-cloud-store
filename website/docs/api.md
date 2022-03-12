@@ -9,6 +9,13 @@ import * as CloudStore from 'react-native-cloud-store'
 ```
 
 ## ICloud Documents API
+
+### `isICloudAvailable`
+If user's icloud drive not enabled, or user not logged in, this will return `false`
+```ts
+function isICloudAvailable(): Promise<boolean>
+```
+
 ### `writeFile`
 ```ts
 function writeFile(
@@ -138,14 +145,9 @@ const App = () => {
 ### `getConstants`
 
 ```ts
-function isICloudAvailable(): {
+function getConstants(): {
     // empty string if cannot get
     "icloudContainerPath": string
 }
 ```
 
-### `isICloudAvailable`
-If user's icloud drive not enabled, or user not logged in, this will return `false`
-```ts
-function isICloudAvailable(): Promise<boolean>
-```
