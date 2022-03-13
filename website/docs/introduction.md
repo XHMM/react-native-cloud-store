@@ -4,9 +4,9 @@ sidebar_position: 0
 ---
 
 
-:::info
+:::CAUTION
 
-This package current **only works for IOS** and you also need **an apple developer account**.
+This package current **only works for IOS** and you also need **a paid apple developer account**.
 
 :::
 

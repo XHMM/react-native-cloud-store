@@ -12,7 +12,7 @@ RCT_EXTERN_METHOD(writeFile: (NSString)relativeFilePath with:(NSString)content a
 RCT_EXTERN_METHOD(copyFile: (NSString)relativeFilePath to:(NSString)destRelativePath and:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(fileExists: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(fileOrDirExists: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(readFile: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
@@ -20,6 +20,12 @@ RCT_EXTERN_METHOD(readFile: (NSString)relativeFilePath resolver:(RCTPromiseResol
 
 RCT_EXTERN_METHOD(readDir: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(createDir: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(moveDir :(NSString)relativeFromPath to:(NSString)relativeToPath resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(unlink: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)

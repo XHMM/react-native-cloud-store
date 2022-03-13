@@ -44,6 +44,7 @@
 		C0A881CF5CF3F2B244570E2A /* Pods-RNCloudStoreTestAPP.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNCloudStoreTestAPP.debug.xcconfig"; path = "Target Support Files/Pods-RNCloudStoreTestAPP/Pods-RNCloudStoreTestAPP.debug.xcconfig"; sourceTree = "<group>"; };
 		D00AAFFCFCFDA5787532823F /* Pods-RNCloudStoreTestAPP.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNCloudStoreTestAPP.release.xcconfig"; path = "Target Support Files/Pods-RNCloudStoreTestAPP/Pods-RNCloudStoreTestAPP.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F7F5585227DDD4B100A628A6 /* RNCloudStoreTestAPP.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = RNCloudStoreTestAPP.entitlements; path = RNCloudStoreTestAPP/RNCloudStoreTestAPP.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +87,7 @@
 		13B07FAE1A68108700A75B9A /* RNCloudStoreTestAPP */ = {
 			isa = PBXGroup;
 			children = (
+				F7F5585227DDD4B100A628A6 /* RNCloudStoreTestAPP.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -145,7 +147,6 @@
 				6C97AB639B58BBB4B15BBE30 /* Pods-RNCloudStoreTestAPP-RNCloudStoreTestAPPTests.debug.xcconfig */,
 				1D0AE47A65C8663E3B452821 /* Pods-RNCloudStoreTestAPP-RNCloudStoreTestAPPTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -484,7 +485,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = RNCloudStoreTestAPP/RNCloudStoreTestAPP.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2LXLYN4PN5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RNCloudStoreTestAPP/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -510,6 +513,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = RNCloudStoreTestAPP/RNCloudStoreTestAPP.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = RNCloudStoreTestAPP/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

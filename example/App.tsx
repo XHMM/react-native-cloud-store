@@ -1,115 +1,169 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
-
 import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section: React.FC<{
-  title: string;
-}> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+import {Button, SafeAreaView, Text, View} from 'react-native';
+import * as CloudStore from 'react-native-cloud-store';
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <SafeAreaView>
+      <Button
+        title={'isICloudAvailable'}
+        onPress={async () => {
+          try {
+            const available = await CloudStore.isICloudAvailable();
+            console.log('isICloudAvailable:', available);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
+      <Button
+        title={'getConstants'}
+        onPress={() => {
+          try {
+            const xx = CloudStore.getConstants();
+            console.log('getConstants:', xx);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
+      <View>
+        <Text>kv test</Text>
+        <Button
+          title={'get all'}
+          onPress={async () => {
+            try {
+              const items = await CloudStore.kvGetAllItems();
+              console.log('all kv items:', items);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'set'}
+          onPress={async () => {
+            try {
+              await CloudStore.kvSetItem('abbb', '2');
+              // await CloudStore.kvSync();
+              console.log('set done');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'get'}
+          onPress={async () => {
+            try {
+              const val = await CloudStore.kvGetItem('abbb');
+              console.log('get item:', val);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'remove'}
+          onPress={async () => {
+            try {
+              await CloudStore.kvRemoveItem('abbb');
+              console.log('removed item');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+      </View>
+
+      <View>
+        <Text>document test</Text>
+
+        <Text>file test</Text>
+        <Button
+          title={'write file'}
+          onPress={async () => {
+            try {
+              await CloudStore.writeFile('abbb', 'haha');
+              console.log('wrote file');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'read file'}
+          onPress={async () => {
+            try {
+              const val = await CloudStore.readFile('abbb');
+              console.log('read file:', val);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'remove file'}
+          onPress={async () => {
+            try {
+              await CloudStore.unlink('abbb');
+              console.log('removed file');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'file exists'}
+          onPress={async () => {
+            try {
+              const val = await CloudStore.fileOrDirExists('myfile');
+              console.log('file exists:', val);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+
+        <Text>dir test</Text>
+        <Button
+          title={'create dir'}
+          onPress={async () => {
+            try {
+              await CloudStore.createDir('myfoler');
+              console.log('created dir');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'read dir'}
+          onPress={async () => {
+            try {
+              const dirs = await CloudStore.readDir('/');
+              console.log('dirs:', dirs.join(','));
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'move dir'}
+          onPress={async () => {
+            try {
+              await CloudStore.moveDir('/myfoler', '/destFolder');
+              console.log('moved');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;

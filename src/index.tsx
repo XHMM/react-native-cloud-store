@@ -42,8 +42,8 @@ export async function copyFile(
   });
 }
 
-export async function fileExists(relativePath: string): Promise<boolean> {
-  return CloudStore.fileExists(relativePath);
+export async function fileOrDirExists(relativePath: string): Promise<boolean> {
+  return CloudStore.fileOrDirExists(relativePath);
 }
 
 export async function readFile(relativePath: string): Promise<string> {
@@ -52,6 +52,17 @@ export async function readFile(relativePath: string): Promise<string> {
 
 export async function readDir(relativePath: string): Promise<string[]> {
   return CloudStore.readDir(relativePath);
+}
+
+export async function createDir(relativePath: string): Promise<string[]> {
+  return CloudStore.createDir(relativePath);
+}
+
+export async function moveDir(
+  relativeFromPath: string,
+  relativeToPath: string
+): Promise<void> {
+  return CloudStore.moveDir(relativeFromPath, relativeToPath);
 }
 
 export async function unlink(relativePath: string): Promise<void> {
@@ -66,7 +77,7 @@ export async function kvSetItem(key: string, value: string): Promise<void> {
   return CloudStore.kvSetItem(key, value);
 }
 
-export async function kvGetItem(key: string): Promise<string> {
+export async function kvGetItem(key: string): Promise<string | undefined> {
   return CloudStore.kvGetItem(key);
 }
 

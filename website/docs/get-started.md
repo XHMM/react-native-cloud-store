@@ -45,7 +45,7 @@ Not supported
     - Back to XCode, select your target -> `Signing & Capabilities` tab -> click "+ Capability" -> search and add "iCloud" just live below:
       ![add-ability-in-xcode](/images/add-ability-in-xcode.png)
 
-      then scroll to iCloud settings part: if you use [key-value storage](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore) check `Key-value storage` , if you use [iCloud documents](https://developer.apple.com/documentation/uikit/documents_data_and_pasteboard/synchronizing_documents_in_the_icloud_environment) check `iCloud Documents` and then select or create a container
+      then scroll to iCloud settings part: if you use [key-value storage](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore) check `Key-value storage` , if you use [iCloud documents](https://developer.apple.com/documentation/uikit/documents_data_and_pasteboard/synchronizing_documents_in_the_icloud_environment) check `iCloud Documents` and then **select or create a container**
 
     - (Optional Step) If you want to make your documents visible to user (appeared in iCloud dirve folder), open `Info.plist` add and change as the following:
       ```xml

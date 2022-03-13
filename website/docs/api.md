@@ -11,7 +11,7 @@ import * as CloudStore from 'react-native-cloud-store'
 ## ICloud Documents API
 
 ### `isICloudAvailable`
-If user's icloud drive not enabled, or user not logged in, this will return `false`
+If user's disabled your app access icloud drive, or user not logged in using apple id, this will return `false`
 ```ts
 function isICloudAvailable(): Promise<boolean>
 ```
@@ -39,9 +39,9 @@ function copyFile(
 ): Promise<void>
 ```
 
-### `fileExists`
+### `fileOrDirExists`
 ```ts
-function fileExists(
+function fileOrDirExists(
     relativePath: string
 ): Promise<boolean>
 ```
@@ -58,6 +58,21 @@ function readFile(
 function readDir(
     relativePath: string
 ): Promise<string[]>
+```
+
+### `createDir`
+```ts
+function createDir(
+    relativePath: string
+): Promise<void>
+```
+
+### `moveDir`
+```ts
+function moveDir(
+    relativeFromPath: string,
+    relativeToPath: string
+): Promise<void>
 ```
 
 ### `unlink`
@@ -79,7 +94,9 @@ Changes your app writes to the key-value store object are initially held in memo
 
 ### `kvSync`
 
-This method will call [synchronize()](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1415989-synchronize) to immediately synchronizes in-memory keys and values with those stored on disk. You may need to call this method after set/remove operation.
+This method will call [synchronize()](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1415989-synchronize) to explicitly synchronizes in-memory keys and values with those stored on disk.
+
+As apple doc said, the only recommended time to call this method is upon app launch, or upon returning to the foreground, to ensure that the in-memory key-value store representation is up-to-date.
 
 ```ts
 function kvSync(): Promise<void>
@@ -98,7 +115,7 @@ function kvSetItem(
 ```ts
 function kvGetItem(
     key: string,
-): Promise<string>
+): Promise<string | undefined>
 ```
 
 
@@ -146,7 +163,7 @@ const App = () => {
 
 ```ts
 function getConstants(): {
-    // empty string if cannot get
+    // empty string if cannot get, for example your developer account not create a container, or not choose a contanier
     "icloudContainerPath": string
 }
 ```

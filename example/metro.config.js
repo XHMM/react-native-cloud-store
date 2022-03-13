@@ -10,8 +10,8 @@ const packagePath = path.join(__dirname, '../');
  */
 module.exports = {
   resolver: {
-    nodeModulesPaths: [packagePath],
-    // rest of metro resolver options...
+    // don't omit the first path!! I am curious about nodeModulesPaths documentation!!
+    nodeModulesPaths: [path.join(__dirname, './node_modules'), packagePath],
   },
   watchFolders: [packagePath],
 
