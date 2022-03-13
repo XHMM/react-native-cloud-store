@@ -2,8 +2,6 @@
 
 A react-native module for cloud operations (currently only support iCloud drive)
 
-**Developing, use at your risk, issue and PR is welcome!**
-
 ## Get Started
 [Documentation](https://react-native-cloud-store.vercel.app/docs/get-started)
 
