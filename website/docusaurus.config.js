@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'react-native-cloud-store',
-  tagline: 'A ReactNative module for cloud operation',
+  tagline: 'A react-native module for cloud operation',
   url: 'https://react-native-cloud-store.vercel.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
