@@ -19,7 +19,7 @@ function isICloudAvailable(): Promise<boolean>
 ### `writeFile`
 ```ts
 function writeFile(
-    // path should relative to icloudContainerURL,
+    // path should relative to iCloudContainerURL,
     // for example: "a/b.txt", "/a/b/c/", ends or starts with '/' not matter
     relativePath: string,
     content: string,
@@ -27,30 +27,14 @@ function writeFile(
 ): Promise<void>
 ```
 
-### `copyFile`
-```ts
-function copyFile(
-    // supported format:
-    //  - path relative to icloudContainerURL
-    //  - file:///xx/yy
-    srcURIOrRelativePath: string,
-    destRelativePath: string,
-    options: {override: boolean}
-): Promise<void>
-```
-
-### `fileOrDirExists`
-```ts
-function fileOrDirExists(
-    relativePath: string
-): Promise<boolean>
-```
-
 ### `readFile`
 ```ts
 function readFile(
     relativePath: string
-): Promise<string>  // utf8 format
+): Promise<{
+  content: string // utf8 format
+  downloadStatus // https://developer.apple.com/documentation/foundation/urlubiquitousitemdownloadingstatus
+}>
 ```
 
 ### `readDir`
@@ -75,6 +59,16 @@ function moveDir(
 ): Promise<void>
 ```
 
+### `copy`
+copy file or directory
+```ts
+function copy(
+    srcRelativePath: string,
+    destRelativePath: string,
+    options: {override: boolean}
+): Promise<void>
+```
+
 ### `unlink`
 remove file or directory
 ```ts
@@ -82,6 +76,36 @@ function unlink(
     relativePath: string
 ): Promise<void>
 ```
+
+### `exist`
+check file or directory exists
+```ts
+function exist(
+    relativePath: string
+): Promise<boolean>
+```
+
+### `copyFromLocal`
+```ts
+function copyFromLocal(
+  fullLocalPath: string,
+  relativePath: string
+): Promise<void>
+```
+
+### `downloadToLocal`
+```ts
+function downloadToLocal(
+  relativePath: string,
+  fullLocalPath: string
+): Promise<void>
+```
+
+### `onICloudDocumentsStartGathering` (event)
+### `onICloudDocumentsGathering` (event)
+### `onICloudDocumentsFinishGathering` (event)
+### `onICloudDocumentsUpdateGathering` (event)
+
 
 ## Key-value Storage API
 :::info
@@ -136,20 +160,14 @@ function kvGetAllItems(): Promise<Record<string, string>>
 ### `onICloudKVStoreRemoteChanged` (event)
 
 ```jsx
-import { NativeEventEmitter } from 'react-native';
-import { useEffect } from "react";
-import * as CloudStore from 'react-native-cloud-store'
-
 const App = () => {
     useEffect(() => {
-        const event = new NativeEventEmitter(CloudStore);
-        event.addListener('onICloudKVStoreRemoteChanged', (userInfo) => {
-           console.log(userInfo.changedKeys)
-        });
-
-        return () => {
-            event.remove()
-        }
+      const ev = CloudStore.onICloudKVStoreRemoteChange(u => {
+        console.log('onICloudKVStoreRemoteChange:', u);
+      });
+      return () => {
+        ev.remove()
+      }
     }, [])
 
     return null
@@ -164,7 +182,7 @@ const App = () => {
 ```ts
 function getConstants(): {
     // empty string if cannot get, for example your developer account not create a container, or not choose a contanier
-    "icloudContainerPath": string
+    "iCloudContainerPath": string
 }
 ```
 

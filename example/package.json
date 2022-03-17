@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "17.0.2",
     "react-native": "0.67.3",
-    "react-native-cloud-store": "file:.."
+    "react-native-cloud-store": "file:..",
+    "react-native-fs": "^2.19.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
