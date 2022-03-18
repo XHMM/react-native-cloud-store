@@ -85,17 +85,19 @@ function exist(
 ): Promise<boolean>
 ```
 
-### `copyFromLocal`
+### `upload`
+upload app local file to iCloud container
 ```ts
-function copyFromLocal(
+function upload(
   fullLocalPath: string,
   relativePath: string
 ): Promise<void>
 ```
 
-### `downloadToLocal`
+### `persist`
+download/persist cloud file to local device, you can only move/copy file after persisting it
 ```ts
-function downloadToLocal(
+function persist(
   relativePath: string,
   fullLocalPath: string
 ): Promise<void>

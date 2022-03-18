@@ -275,7 +275,7 @@ extension CloudStoreModule {
 
 enum ICloudGatheringFileType:String,CaseIterable{
     case upload = "upload"
-    case download = "download"
+    case persist = "persist"
 }
 struct ICloudGatheringFile {
     let type: ICloudGatheringFileType
@@ -306,7 +306,7 @@ extension CloudStoreModule {
             // let ?? = item.value(forAttribute: NSMetadataUbiquitousItemDownloadRequestedKey)
             let downloadingStatus = item.value(forAttribute: NSMetadataUbiquitousItemDownloadingStatusKey) as! String
             let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as! NSNumber
-            arr.append(ICloudGatheringFile(type: .download, path: fileItemURL.path, progress: Float(truncating: downloadingProgress)))
+            arr.append(ICloudGatheringFile(type: .persist, path: fileItemURL.path, progress: Float(truncating: downloadingProgress)))
             print(fileItemURL,"\n  download info:\n isDownloading-\(downloading),status-\(downloadingStatus),progress-\(downloadingProgress)")
         }
         return arr
@@ -412,7 +412,7 @@ extension CloudStoreModule {
     }
     
     @objc
-    func copyFromLocal(_ fullLocalPath: String, to relativePath: String, resolver resolve: RCTPromiseResolveBlock,
+    func upload(_ fullLocalPath: String, to relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                        rejecter reject: RCTPromiseRejectBlock) {
         let localURL = URL(string: fullLocalPath)
         guard let localURL = localURL else {
@@ -431,11 +431,10 @@ extension CloudStoreModule {
         } catch {
             reject("ERR_COPY_TO_ICLOUD", error.localizedDescription, NSError(domain: domain, code: 304, userInfo: nil))
         }
-        
     }
     
     @objc
-    func downloadToLocal(_ relativePath: String, to fullLocalPath: String, resolver resolve: RCTPromiseResolveBlock,
+    func persist(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                          rejecter reject: RCTPromiseRejectBlock) {
         let icloudURL = fullICloudURL(relativePath)
         do {

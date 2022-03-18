@@ -164,10 +164,7 @@ const App = () => {
             title={'download from icloud to local'}
             onPress={async () => {
               try {
-                await CloudStore.downloadToLocal(
-                  'Documents/test-from-local.txt',
-                  RNFS.DocumentDirectoryPath + '/test-from-icloud.txt',
-                );
+                await CloudStore.persist('Documents/test-from-local.txt');
                 console.log('done');
               } catch (e) {
                 console.error(e);
@@ -176,10 +173,10 @@ const App = () => {
           />
 
           <Button
-            title={'copy local to icloud'}
+            title={'upload local to icloud'}
             onPress={async () => {
               try {
-                await CloudStore.copyFromLocal(
+                await CloudStore.upload(
                   'file://' + RNFS.DocumentDirectoryPath + '/test.txt',
                   'Documents/test-from-local.txt',
                 );

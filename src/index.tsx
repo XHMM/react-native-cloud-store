@@ -123,22 +123,19 @@ export async function exist(relativePath: string): Promise<boolean> {
   return CloudStore.exist(relativePath);
 }
 
-export async function copyFromLocal(
+export async function upload(
   fullLocalPath: string,
   relativePath: string
 ): Promise<void> {
-  return CloudStore.copyFromLocal(fullLocalPath, relativePath);
+  return CloudStore.upload(fullLocalPath, relativePath);
 }
 
-export async function downloadToLocal(
-  relativePath: string,
-  fullLocalPath: string
-): Promise<void> {
-  return CloudStore.downloadToLocal(relativePath, fullLocalPath);
+export async function persist(relativePath: string): Promise<void> {
+  return CloudStore.persist(relativePath);
 }
 
 type DocumentsGatheringData = Array<{
-  type: 'upload' | 'download';
+  type: 'upload' | 'persist';
   iCloudFileRelativePath: string;
   progress: number;
 }>;
