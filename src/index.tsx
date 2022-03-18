@@ -14,7 +14,7 @@ if (Platform.OS === 'ios' && !CloudStore) {
 const eventEmitter = new NativeEventEmitter(CloudStore);
 
 export function getConstants(): {
-  icloudContainerPath: string;
+  iCloudContainerPath: string;
 } {
   return CloudStore.getConstants();
 }
@@ -136,7 +136,7 @@ export async function persist(relativePath: string): Promise<void> {
 
 type DocumentsGatheringData = Array<{
   type: 'upload' | 'persist';
-  iCloudFileRelativePath: string;
+  path: string;
   progress: number;
 }>;
 type DocumentsGatheringEventHandler = (data: DocumentsGatheringData) => void;

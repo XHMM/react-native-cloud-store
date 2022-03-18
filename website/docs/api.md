@@ -89,6 +89,7 @@ function exist(
 upload app local file to iCloud container
 ```ts
 function upload(
+  // `fullLocalPath` needs to manully specify a schame, such as "file://" to prevent error
   fullLocalPath: string,
   relativePath: string
 ): Promise<void>
