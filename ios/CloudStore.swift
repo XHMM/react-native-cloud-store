@@ -353,7 +353,8 @@ extension CloudStoreModule {
         if hasListeners {
             print("\n start results:")
             let obj = notification.object as! NSObject
-            sendEvent(withName: "onICloudDocumentsStartGathering", body: obj == uploadQuery ? logUploadInfo : obj == downloadQuery ? logDownloadInfo() : [])
+            let res = obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : []
+            sendEvent(withName: "onICloudDocumentsStartGathering", body: res)
         }
     }
 
@@ -362,7 +363,8 @@ extension CloudStoreModule {
         if hasListeners{
             print("\n gathering results:")
             let obj = notification.object as! NSObject
-            sendEvent(withName: "onICloudDocumentsGathering", body: obj == uploadQuery ? logUploadInfo : obj == downloadQuery ? logDownloadInfo() : [])
+            let res = obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : []
+            sendEvent(withName: "onICloudDocumentsGathering", body: res)
         }
     }
 
@@ -371,7 +373,8 @@ extension CloudStoreModule {
         if hasListeners {
             print("\n finish results:")
             let obj = notification.object as! NSObject
-            sendEvent(withName: "onICloudDocumentsFinishGathering", body: obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : [])
+            let res = obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : []
+            sendEvent(withName: "onICloudDocumentsFinishGathering", body: res)
         }
     }
 
@@ -380,7 +383,8 @@ extension CloudStoreModule {
         if hasListeners {
             print("\n update results:")
             let obj = notification.object as! NSObject
-            sendEvent(withName: "onICloudDocumentsUpdateGathering", body: obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : [])
+            let res = obj == uploadQuery ? logUploadInfo() : obj == downloadQuery ? logDownloadInfo() : []
+            sendEvent(withName: "onICloudDocumentsUpdateGathering", body: res)
         }
     }
 
