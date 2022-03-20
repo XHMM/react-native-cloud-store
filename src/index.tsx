@@ -72,24 +72,6 @@ export async function isICloudAvailable(): Promise<boolean> {
   return CloudStore.isICloudAvailable();
 }
 
-interface ICloudFile {
-  content: string;
-
-  isInICloud?: boolean;
-  containerDisplayName?: string;
-
-  isDownloading?: boolean;
-  hasCalledDownload?: boolean;
-  downloadStatus?: string;
-  downloadError?: string;
-
-  isUploaded?: boolean;
-  isUploading?: boolean;
-  uploadError?: string;
-
-  hasUnresolvedConflicts?: boolean;
-}
-
 export async function writeFile(
   relativePath: string,
   content: string,
@@ -100,7 +82,7 @@ export async function writeFile(
   });
 }
 
-export async function readFile(relativePath: string): Promise<ICloudFile> {
+export async function readFile(relativePath: string): Promise<string> {
   return CloudStore.readFile(relativePath);
 }
 
@@ -136,6 +118,25 @@ export async function unlink(relativePath: string): Promise<void> {
 
 export async function exist(relativePath: string): Promise<boolean> {
   return CloudStore.exist(relativePath);
+}
+
+interface ICloudStat {
+  isInICloud?: boolean;
+  containerDisplayName?: string;
+
+  isDownloading?: boolean;
+  hasCalledDownload?: boolean;
+  downloadStatus?: string;
+  downloadError?: string;
+
+  isUploaded?: boolean;
+  isUploading?: boolean;
+  uploadError?: string;
+
+  hasUnresolvedConflicts?: boolean;
+}
+export async function stat(relativePath: string): Promise<ICloudStat> {
+  return CloudStore.stat(relativePath);
 }
 
 export async function upload(

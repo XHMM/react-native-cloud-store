@@ -174,39 +174,7 @@ extension CloudStoreModule {
 
         do {
             let content = try String(contentsOf: fileURL, encoding: .utf8)
-            let resources = try fileURL.resourceValues(forKeys: [
-                    .isUbiquitousItemKey,
-                    .ubiquitousItemContainerDisplayNameKey,
-
-                    .ubiquitousItemDownloadRequestedKey,
-                    .ubiquitousItemIsDownloadingKey,
-                    .ubiquitousItemDownloadingStatusKey,
-                    .ubiquitousItemDownloadingErrorKey,
-
-                    .ubiquitousItemIsUploadedKey,
-                    .ubiquitousItemIsUploadingKey,
-                    .ubiquitousItemUploadingErrorKey,
-
-                    .ubiquitousItemHasUnresolvedConflictsKey,
-            ])
-            let dict = NSMutableDictionary()
-            dict["content"] = content;
-
-            dict["isInICloud"] = resources.isUbiquitousItem
-            dict["containerDisplayName"] = resources.ubiquitousItemContainerDisplayName
-
-            dict["isDownloading"] = resources.ubiquitousItemIsDownloading
-            dict["hasCalledDownload"] = resources.ubiquitousItemDownloadRequested
-            dict["downloadStatus"] = resources.ubiquitousItemDownloadingStatus
-            dict["downloadError"] = resources.ubiquitousItemDownloadingError?.localizedDescription
-
-            dict["isUploaded"] = resources.ubiquitousItemIsUploaded
-            dict["isUploading"] = resources.ubiquitousItemIsUploading
-            dict["uploadError"] = resources.ubiquitousItemUploadingError?.localizedDescription
-
-            dict["hasUnresolvedConflicts"] = resources.ubiquitousItemHasUnresolvedConflicts
-
-            resolve(dict)
+            resolve(content)
         } catch {
             reject("ERR_READ_FILE", error.localizedDescription, NSError(domain: domain, code: 402, userInfo: nil))
         }
@@ -368,6 +336,56 @@ extension CloudStoreModule {
         let fileFullUrl = getFullICloudURL(relativePath)
         resolve(FileManager.default.fileExists(atPath: fileFullUrl.path))
     }
+    
+    @objc
+    func stat(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
+                  rejecter reject: RCTPromiseRejectBlock) {
+        guard assertICloud(ifNil:reject) else { return }
+
+        let url = getFullICloudURL(relativePath)
+        if(!FileManager.default.fileExists(atPath: url.path)) {
+            reject("ERR_NOT_EXISTS", "file \(url.path) not exists", NSError(domain: domain, code: 401, userInfo: nil))
+            return
+        }
+
+        do {
+            let resources = try url.resourceValues(forKeys: [
+                    .isUbiquitousItemKey,
+                    .ubiquitousItemContainerDisplayNameKey,
+
+                    .ubiquitousItemDownloadRequestedKey,
+                    .ubiquitousItemIsDownloadingKey,
+                    .ubiquitousItemDownloadingStatusKey,
+                    .ubiquitousItemDownloadingErrorKey,
+
+                    .ubiquitousItemIsUploadedKey,
+                    .ubiquitousItemIsUploadingKey,
+                    .ubiquitousItemUploadingErrorKey,
+
+                    .ubiquitousItemHasUnresolvedConflictsKey,
+            ])
+            let dict = NSMutableDictionary()
+
+            dict["isInICloud"] = resources.isUbiquitousItem
+            dict["containerDisplayName"] = resources.ubiquitousItemContainerDisplayName
+
+            dict["isDownloading"] = resources.ubiquitousItemIsDownloading
+            dict["hasCalledDownload"] = resources.ubiquitousItemDownloadRequested
+            dict["downloadStatus"] = resources.ubiquitousItemDownloadingStatus
+            dict["downloadError"] = resources.ubiquitousItemDownloadingError?.localizedDescription
+
+            dict["isUploaded"] = resources.ubiquitousItemIsUploaded
+            dict["isUploading"] = resources.ubiquitousItemIsUploading
+            dict["uploadError"] = resources.ubiquitousItemUploadingError?.localizedDescription
+
+            dict["hasUnresolvedConflicts"] = resources.ubiquitousItemHasUnresolvedConflicts
+
+            resolve(dict)
+        } catch {
+            reject("ERR_STAT", error.localizedDescription, NSError(domain: domain, code: 402, userInfo: nil))
+        }
+    }
+    
 
     private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using enumQuery: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {

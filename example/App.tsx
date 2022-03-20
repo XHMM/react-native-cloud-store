@@ -115,6 +115,17 @@ const App = () => {
 
           <Text>dir test</Text>
           <Button
+            title={'stat dir'}
+            onPress={async () => {
+              try {
+                const val = await CloudStore.stat('Documents');
+                console.log('stat:', val);
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+          <Button
             title={'create dir'}
             onPress={async () => {
               try {
@@ -148,6 +159,19 @@ const App = () => {
             }}
           />
           <Text>file test</Text>
+          <Button
+            title={'stat file'}
+            onPress={async () => {
+              try {
+                const val = await CloudStore.stat(
+                  'Documents/copied-from-icloud.txt',
+                );
+                console.log('stat:', val);
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
           <Button
             title={'write file'}
             onPress={async () => {
@@ -200,7 +224,7 @@ const App = () => {
             title={'persist'}
             onPress={async () => {
               try {
-                await CloudStore.persist('Documents');
+                await CloudStore.persist('Documents/copied-from-icloud.txt');
                 console.log('done');
               } catch (e) {
                 console.error(e);

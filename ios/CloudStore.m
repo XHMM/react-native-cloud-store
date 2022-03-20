@@ -43,7 +43,8 @@ RCT_EXTERN_METHOD(unlink: (NSString)relativePath resolver:(RCTPromiseResolveBloc
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(exist: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-
+RCT_EXTERN_METHOD(stat: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(upload :(NSString)fullLocalPath to:(NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(persist :(NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve

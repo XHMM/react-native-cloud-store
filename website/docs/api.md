@@ -31,23 +31,7 @@ function writeFile(
 ```ts
 function readFile(
     relativePath: string
-): Promise<{
-  content: string // utf8 format
-
-  isInICloud?: boolean;
-  containerDisplayName?: string;
-
-  isDownloading?: boolean;
-  hasCalledDownload?: boolean;
-  downloadStatus?: string; // https://developer.apple.com/documentation/foundation/urlubiquitousitemdownloadingstatus
-  downloadError?: string;
-
-  isUploaded?: boolean;
-  isUploading?: boolean;
-  uploadError?: string;
-
-  hasUnresolvedConflicts?: boolean;
-}>
+): Promise<string> // utf8
 ```
 
 ### `readDir`
@@ -98,6 +82,26 @@ function exist(
 ): Promise<boolean>
 ```
 
+### `stat`
+```ts
+function stat(
+    relativePath: string
+): Promise<{
+  isInICloud?: boolean;
+  containerDisplayName?: string;
+
+  isDownloading?: boolean;
+  hasCalledDownload?: boolean;
+  downloadStatus?: string;
+  downloadError?: string;
+
+  isUploaded?: boolean;
+  isUploading?: boolean;
+  uploadError?: string;
+
+  hasUnresolvedConflicts?: boolean;
+}>
+```
 ### `upload`
 upload app local file to iCloud container
 ```ts
