@@ -72,7 +72,20 @@ export async function isICloudAvailable(): Promise<boolean> {
 
 interface ICloudFile {
   content: string;
-  downloadStatus: string;
+
+  isInICloud?: boolean;
+  containerDisplayName?: string;
+
+  isDownloading?: boolean;
+  hasCalledDownload?: boolean;
+  downloadStatus?: string;
+  downloadError?: string;
+
+  isUploaded?: boolean;
+  isUploading?: boolean;
+  uploadError?: string;
+
+  hasUnresolvedConflicts?: boolean;
 }
 
 export async function writeFile(
@@ -134,11 +147,19 @@ export async function persist(relativePath: string): Promise<void> {
   return CloudStore.persist(relativePath);
 }
 
-type DocumentsGatheringData = Array<{
-  type: 'upload' | 'persist';
-  path: string;
-  progress: number;
-}>;
+type DocumentsGatheringData = {
+  info: {
+    added: string[];
+    changed: string[];
+    removed: string[];
+  };
+  detail: Array<{
+    type: 'upload' | 'persist';
+    path: string;
+    progress: number | null;
+    isDir: boolean | null;
+  }>;
+};
 type DocumentsGatheringEventHandler = (data: DocumentsGatheringData) => void;
 export function onICloudDocumentsStartGathering(
   fn: DocumentsGatheringEventHandler

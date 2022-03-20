@@ -113,98 +113,6 @@ const App = () => {
         <View>
           <Text>document test</Text>
 
-          <Text>file test</Text>
-          <Button
-            title={'write file'}
-            onPress={async () => {
-              try {
-                await CloudStore.writeFile('Documents/test.txt', 'haha');
-                console.log('wrote file');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'read file'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.readFile(
-                  'Documents/test-from-local.txt',
-                );
-                console.log('read file:', val);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'remove file'}
-            onPress={async () => {
-              try {
-                await CloudStore.unlink('Documents/test-from-local.txt');
-                console.log('removed file');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'file exists'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.exist('Documents/test.txt');
-                console.log('file exists:', val);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'download from icloud to local'}
-            onPress={async () => {
-              try {
-                await CloudStore.persist('Documents/test-from-local.txt');
-                console.log('done');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-
-          <Button
-            title={'upload local to icloud'}
-            onPress={async () => {
-              try {
-                await CloudStore.upload(
-                  'file://' + RNFS.DocumentDirectoryPath + '/test.txt',
-                  'Documents/test-from-local.txt',
-                );
-                console.log('done');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-
-          <Button
-            title={'move downloaded to local'}
-            onPress={async () => {
-              try {
-                await RNFS.copyFile(
-                  CloudStore.getConstants().icloudContainerPath +
-                    '/Documents/test-from-local.txt',
-                  'file://' +
-                    RNFS.DocumentDirectoryPath +
-                    '/copied-from-icloud.txt',
-                );
-                console.log('done');
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-
           <Text>dir test</Text>
           <Button
             title={'create dir'}
@@ -239,8 +147,100 @@ const App = () => {
               }
             }}
           />
-        </View>
+          <Text>file test</Text>
+          <Button
+            title={'write file'}
+            onPress={async () => {
+              try {
+                await CloudStore.writeFile('Documents/test.txt', 'haha');
+                console.log('wrote file');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+          <Button
+            title={'read file'}
+            onPress={async () => {
+              try {
+                const val = await CloudStore.readFile(
+                  'Documents/copied-from-icloud.txt',
+                );
+                console.log('read file:', val);
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+          <Button
+            title={'remove file'}
+            onPress={async () => {
+              try {
+                await CloudStore.unlink('Documents/copied-from-icloud.txt');
+                console.log('removed file');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+          <Button
+            title={'file exists'}
+            onPress={async () => {
+              try {
+                const val = await CloudStore.exist(
+                  'Documents/copied-from-icloud.txt',
+                );
+                console.log('file exists:', val);
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+          <Button
+            title={'persist'}
+            onPress={async () => {
+              try {
+                await CloudStore.persist('Documents');
+                console.log('done');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
 
+          <Button
+            title={'copy downloaded file to local'}
+            onPress={async () => {
+              try {
+                await RNFS.copyFile(
+                  CloudStore.getConstants().iCloudContainerPath +
+                    '/Documents/test.txt',
+                  'file://' + RNFS.DocumentDirectoryPath + '/test.txt',
+                );
+                console.log('done');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+
+          <Button
+            title={'upload'}
+            onPress={async () => {
+              try {
+                await CloudStore.upload(
+                  'file://' +
+                    RNFS.DocumentDirectoryPath +
+                    '/copied-from-icloud.txt',
+                  'Documents/copied-from-icloud.txt',
+                );
+                console.log('done');
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+          />
+        </View>
         <View>
           <Text>local documents test</Text>
           <Button

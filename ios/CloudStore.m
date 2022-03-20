@@ -24,7 +24,7 @@ RCT_EXTERN_METHOD(isICloudAvailable :(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 // file
-RCT_EXTERN_METHOD(writeFile: (NSString)relativeFilePath with:(NSString)content and:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(writeFile: (NSString)relativeFilePath withContent:(NSString)content withOptions:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(readFile: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
@@ -37,7 +37,7 @@ RCT_EXTERN_METHOD(moveDir :(NSString)relativeFromPath to:(NSString)relativeToPat
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 // file or dir
-RCT_EXTERN_METHOD(copy: (NSString)srcRelativePath to:(NSString)destRelativePath and:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(copy: (NSString)srcRelativePath to:(NSString)destRelativePath with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(unlink: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
