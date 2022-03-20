@@ -126,7 +126,11 @@ interface ICloudStat {
 
   isDownloading?: boolean;
   hasCalledDownload?: boolean;
-  downloadStatus?: string;
+  // https://developer.apple.com/documentation/foundation/urlubiquitousitemdownloadingstatus
+  downloadStatus?:
+    | 'NSURLUbiquitousItemDownloadingStatusNotDownloaded'
+    | 'NSURLUbiquitousItemDownloadingStatusCurrent'
+    | 'NSURLUbiquitousItemDownloadingStatusDownloaded';
   downloadError?: string;
 
   isUploaded?: boolean;

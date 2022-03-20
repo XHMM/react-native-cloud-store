@@ -122,10 +122,15 @@ function persist(
 ```
 
 ### `onICloudDocumentsStartGathering` (event)
+This event only be called at the first search phase
 ### `onICloudDocumentsGathering` (event)
+This event only be called at the first search phase
 ### `onICloudDocumentsFinishGathering` (event)
+This event only be called at the first search phase
 ### `onICloudDocumentsUpdateGathering` (event)
+Use this event to listen upcoming upload/persist progress.
 
+If you persist a file that already downloaded to local, this event will not be called, because system no need to download your file, at this time, results appear in the above first-phase events. (you can use `downloadStatus` property returned by `stat()` to check if file was in local)
 
 ## Key-value Storage API
 :::info
