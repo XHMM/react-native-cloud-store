@@ -1,5 +1,7 @@
 import { NativeModules, Platform, NativeEventEmitter } from 'react-native';
 
+//TODO: auto generate api doc
+
 const LINKING_ERROR =
   `The package 'react-native-cloud-store' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +

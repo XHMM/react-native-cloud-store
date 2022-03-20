@@ -33,7 +33,20 @@ function readFile(
     relativePath: string
 ): Promise<{
   content: string // utf8 format
-  downloadStatus // https://developer.apple.com/documentation/foundation/urlubiquitousitemdownloadingstatus
+
+  isInICloud?: boolean;
+  containerDisplayName?: string;
+
+  isDownloading?: boolean;
+  hasCalledDownload?: boolean;
+  downloadStatus?: string; // https://developer.apple.com/documentation/foundation/urlubiquitousitemdownloadingstatus
+  downloadError?: string;
+
+  isUploaded?: boolean;
+  isUploading?: boolean;
+  uploadError?: string;
+
+  hasUnresolvedConflicts?: boolean;
 }>
 ```
 
