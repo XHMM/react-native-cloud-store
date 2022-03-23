@@ -12,3 +12,7 @@ This package aims to provide a wrapper for cloud-related operation:
 - For IOS: iCloudDrive
 - For Android: planning ...
 - For Both: planning ...
+
+:::caution
+This package is still in active developing and **will be stable until version 1.0.0 release**
+:::
