@@ -102,7 +102,7 @@ function stat(
   hasUnresolvedConflicts?: boolean;
 }>
 ```
-### `upload`
+### `upload` (IOS 13+)
 upload app local file to iCloud container
 ```ts
 function upload(
@@ -112,7 +112,7 @@ function upload(
 ): Promise<void>
 ```
 
-### `persist`
+### `persist` (IOS 13+)
 download/persist cloud file to local device, you can only move/copy file after persisting it
 ```ts
 function persist(

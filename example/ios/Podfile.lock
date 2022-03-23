@@ -257,11 +257,6 @@ PODS:
     - glog
     - RCT-Folly (= 2021.06.28.00-v2)
     - React-jsi/Default (= 0.67.3)
-  - React-jsi/Default (0.67.3):
-    - boost (= 1.76.0)
-    - DoubleConversion
-    - glog
-    - RCT-Folly (= 2021.06.28.00-v2)
   - React-jsiexecutor (0.67.3):
     - DoubleConversion
     - glog
@@ -272,7 +267,7 @@ PODS:
   - React-jsinspector (0.67.3)
   - React-logger (0.67.3):
     - glog
-  - react-native-cloud-store (0.2.1-beta.2):
+  - react-native-cloud-store (0.4.1-beta):
     - React-Core
   - React-perflogger (0.67.3)
   - React-RCTActionSheet (0.67.3):
@@ -517,7 +512,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 15ea57ead631a11fad57634ff69f78e797113a39
   React-jsinspector: 1e1e03345cf6d47779e2061d679d0a87d9ae73d8
   React-logger: 1e10789cb84f99288479ba5f20822ce43ced6ffe
-  react-native-cloud-store: eda5eb1275d702968582d34af99e94cdc594f60a
+  react-native-cloud-store: f73674b584f4efb961b580bad5ab005bfa0991be
   React-perflogger: 93d3f142d6d9a46e635f09ba0518027215a41098
   React-RCTActionSheet: 87327c3722203cc79cf79d02fb83e7332aeedd18
   React-RCTAnimation: 009c87c018d50e0b38692699405ebe631ff4872d
@@ -534,6 +529,6 @@ SPEC CHECKSUMS:
   Yoga: 90dcd029e45d8a7c1ff059e8b3c6612ff409061a
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 108f68b4b5913886b96f5aba18136ce936bc1299
+PODFILE CHECKSUM: e2b1032f43e870868440d53a8db0e8242e36306e
 
 COCOAPODS: 1.10.2

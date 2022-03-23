@@ -15,8 +15,11 @@ class CloudStoreModule : RCTEventEmitter {
     private var iCloudURL: URL? {
         FileManager.default.url(forUbiquityContainerIdentifier: nil)
     }
-    private var subscriberContainer = Set<AnyCancellable>()
-    private var queryContainer = Set<NSMetadataQuery>()
+
+    @available(iOS 13.0, *)
+    private lazy var subscriberContainer = Set<AnyCancellable>()
+    @available(iOS 13.0, *)
+    private lazy var queryContainer = Set<NSMetadataQuery>()
 
     override init() {
         super.init()
@@ -336,10 +339,10 @@ extension CloudStoreModule {
         let fileFullUrl = getFullICloudURL(relativePath)
         resolve(FileManager.default.fileExists(atPath: fileFullUrl.path))
     }
-    
+
     @objc
     func stat(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
-                  rejecter reject: RCTPromiseRejectBlock) {
+              rejecter reject: RCTPromiseRejectBlock) {
         guard assertICloud(ifNil:reject) else { return }
 
         let url = getFullICloudURL(relativePath)
@@ -350,17 +353,17 @@ extension CloudStoreModule {
 
         do {
             let resources = try url.resourceValues(forKeys: [
-                    .isUbiquitousItemKey,
-                    .ubiquitousItemContainerDisplayNameKey,
+                .isUbiquitousItemKey,
+                .ubiquitousItemContainerDisplayNameKey,
 
                     .ubiquitousItemDownloadRequestedKey,
-                    .ubiquitousItemIsDownloadingKey,
-                    .ubiquitousItemDownloadingStatusKey,
-                    .ubiquitousItemDownloadingErrorKey,
+                .ubiquitousItemIsDownloadingKey,
+                .ubiquitousItemDownloadingStatusKey,
+                .ubiquitousItemDownloadingErrorKey,
 
                     .ubiquitousItemIsUploadedKey,
-                    .ubiquitousItemIsUploadingKey,
-                    .ubiquitousItemUploadingErrorKey,
+                .ubiquitousItemIsUploadingKey,
+                .ubiquitousItemUploadingErrorKey,
 
                     .ubiquitousItemHasUnresolvedConflictsKey,
             ])
@@ -385,8 +388,9 @@ extension CloudStoreModule {
             reject("ERR_STAT", error.localizedDescription, NSError(domain: domain, code: 402, userInfo: nil))
         }
     }
-    
 
+
+    @available(iOS 13.0, *)
     private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using enumQuery: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
@@ -495,6 +499,11 @@ extension CloudStoreModule {
             return
         }
 
+        guard #available(iOS 13, *) else {
+            reject("ERR_VERSION_UNSUPPORTED", "upload events only support IOS 13+",NSError(domain: domain, code: -1, userInfo: nil))
+            return
+        }
+
         initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { (query) in
             query.disableUpdates()
 
@@ -534,6 +543,11 @@ extension CloudStoreModule {
         } catch {
             reject("ERR_DOWNLOAD_ICLOUD_FILE", error.localizedDescription, NSError(
                 domain: domain, code: 801, userInfo: nil))
+            return
+        }
+
+        guard #available(iOS 13, *) else {
+            reject("ERR_VERSION_UNSUPPORTED", "persist events only support IOS 13+",NSError(domain: domain, code: -1, userInfo: nil))
             return
         }
 
