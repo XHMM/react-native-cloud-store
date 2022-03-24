@@ -100,6 +100,11 @@ function stat(
   uploadError?: string;
 
   hasUnresolvedConflicts?: boolean;
+
+  modifyTimestamp?: number;
+  createTimestamp?: number;
+  name?: string;
+  localizedName?: string;
 }>
 ```
 ### `upload` (IOS 13+)

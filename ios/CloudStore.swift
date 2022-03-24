@@ -366,6 +366,11 @@ extension CloudStoreModule {
                 .ubiquitousItemUploadingErrorKey,
 
                     .ubiquitousItemHasUnresolvedConflictsKey,
+
+                .contentModificationDateKey,
+                .creationDateKey,
+                .nameKey,
+                .localizedNameKey
             ])
             let dict = NSMutableDictionary()
 
@@ -382,6 +387,19 @@ extension CloudStoreModule {
             dict["uploadError"] = resources.ubiquitousItemUploadingError?.localizedDescription
 
             dict["hasUnresolvedConflicts"] = resources.ubiquitousItemHasUnresolvedConflicts
+
+            if let modifyDate = resources.contentModificationDate {
+                dict["modifyTimestamp"] = modifyDate.timeIntervalSince1970 * 1000
+            } else {
+                dict["modifyTimestamp"] = nil
+            }
+            if let createDate = resources.contentModificationDate {
+                dict["createTimestamp"] = createDate.timeIntervalSince1970 * 1000
+            } else {
+                dict["createTimestamp"] = nil
+            }
+            dict["name"] = resources.name
+            dict["localizedName"] = resources.localizedName
 
             resolve(dict)
         } catch {

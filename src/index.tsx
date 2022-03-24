@@ -120,7 +120,7 @@ export async function exist(relativePath: string): Promise<boolean> {
   return CloudStore.exist(relativePath);
 }
 
-interface ICloudStat {
+export interface ICloudStat {
   isInICloud?: boolean;
   containerDisplayName?: string;
 
@@ -138,6 +138,11 @@ interface ICloudStat {
   uploadError?: string;
 
   hasUnresolvedConflicts?: boolean;
+
+  modifyTimestamp?: number;
+  createTimestamp?: number;
+  name?: string;
+  localizedName?: string;
 }
 export async function stat(relativePath: string): Promise<ICloudStat> {
   return CloudStore.stat(relativePath);
@@ -154,7 +159,7 @@ export async function persist(relativePath: string): Promise<void> {
   return CloudStore.persist(relativePath);
 }
 
-type DocumentsGatheringData = {
+export type DocumentsGatheringData = {
   info: {
     added: string[];
     changed: string[];
