@@ -411,7 +411,7 @@ extension CloudStoreModule {
         query.operationQueue = .main
         query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope, NSMetadataQueryUbiquitousDataScope]
         query.predicate = NSPredicate(format: "%K CONTAINS %@", NSMetadataItemPathKey,url.path)
-
+        query.notificationBatchingInterval = 0.2
         // TODO: we use publisher here is for future JSI to better support such as upload('/path',{ onProgress: fn, onError: fn}) instead of listening global listeners
 
         var startSub: AnyCancellable?
@@ -512,11 +512,12 @@ extension CloudStoreModule {
             for item in query.results {
                 let item = item as! NSMetadataItem
                 let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
-                let isDir = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemIsUploadingKey])
+                let isDir = values?.isDirectory
+                let isUploading = values?.ubiquitousItemIsUploading
                 let uploadProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentUploadedKey) as? Float
                 arr.append(ICloudGatheringFile(type: .upload, path: fileItemURL.path, progress: uploadProgress, isDir: isDir))
-                if uploadProgress == 100 {
-
+                if isUploading == false && uploadProgress == 100 {
                     ended = true
                 }
                 print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
@@ -559,15 +560,16 @@ extension CloudStoreModule {
                 let item = item as! NSMetadataItem
                 let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
 
-                let isDir = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory ?? nil
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey])
+                let isDir = values?.isDirectory
+                let downloadingStatus = values?.ubiquitousItemDownloadingStatus
+                let downloading = values?.ubiquitousItemIsDownloading
                 let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
-                let downloadingStatus = item.value(forAttribute: NSMetadataUbiquitousItemDownloadingStatusKey)
-                let downloading = item.value(forAttribute: NSMetadataUbiquitousItemIsDownloadingKey)
 
                 arr.append(ICloudGatheringFile(type: .persist, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
 
                 // stop query when one file progress is 100
-                if downloadingProgress == 100 {
+                if downloading == false && downloadingProgress == 100 {
                     ended = true
                 }
                 print(fileItemURL," download info: isDownloading-\(String(describing: downloading)),status-\(String(describing: downloadingStatus)),progress-\(String(describing: downloadingProgress))")
