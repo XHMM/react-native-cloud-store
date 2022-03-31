@@ -1,19 +1,11 @@
 ---
 title: Create React Native App
-sidebar_position: 1
+sidebar_position: 0
 ---
 
-When your project was created using CRNA, you should follow this instruction.
-
 ## Step1 - Install
-With npm:
 ```bash
 npm install react-native-cloud-store
-```
-
-With yarn:
-```bash
-yarn add react-native-cloud-store
 ```
 
 ## Step2 - Link
@@ -35,12 +27,13 @@ Not supported
   1. `File` -> `New` -> `File` -> Choose 'Swift File' and Click Next
   1. Save and create file, then xcode will prompt you to create an Objective-C bridging header, select "Create Briding Header"
 
-:::warning
-Don't delete the created empty swift file!
-:::
+  :::warning
+  Don't delete the created empty swift file!
+  :::
 
-If you are not prompt to create briding header file, you can manually create a .h file and set header location as below (filename not matter):
-![briding-header](/images/bridging-header-settings.png)
+  If you are not prompt to create briding header file, you can manually create a .h file and set header location as below (filename not matter):
+  ![briding-header](/images/bridging-header-settings.png)
+
 1. Next step is add iCloud capability:
   - Go to [developer account website](https://developer.apple.com/account/resources/identifiers/list) and make sure your app identifier enabled iCloud:
     ![enable-icloud-in-identifier](/images/enable-icloud-in-identifier.png)

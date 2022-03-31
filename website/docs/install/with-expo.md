@@ -1,24 +1,17 @@
 ---
 title: Expo
-sidebar_position: 0
+sidebar_position: 1
 ---
-When your project was created using expo, you should follow this instruction
 
-**If you want to use this package with expo ,you need [prebuild](https://docs.expo.dev/workflow/expo-cli/#expo-prebuild) your project, and you will lose features provided by Expo Go**
+**If with expo ,you need [prebuild](https://docs.expo.dev/workflow/expo-cli/#expo-prebuild) your project.**
 
-## Step1 - Install
-With npm:
+## Step1
 ```bash
 npm install react-native-cloud-store
 ```
 
-With yarn:
-```bash
-yarn add react-native-cloud-store
-```
-
 ## Step2
-Edit expo config file `app.json`/`app.config.js`:
+Edit your expo config file `app.json`/`app.config.js`:
 ```js
 module.exports = () => ({
   // ...
@@ -43,7 +36,7 @@ module.exports = () => ({
 });
 ```
 
-## Build and config
+## Step3
 1. run the following command to prebuild your project:
   ```shell
   expo prebuild

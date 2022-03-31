@@ -5,7 +5,7 @@ A react-native module for cloud operations (currently only support iCloud drive)
 This package is still in active developing and **will be stable until version 1.0.0 release**
 
 ## Get Started
-[Documentation](https://react-native-cloud-store.vercel.app/docs/get-started)
+[Documentation](https://react-native-cloud-store.vercel.app)
 
 ## Changelog
 [Changelog](./CHANGELOG.md)
