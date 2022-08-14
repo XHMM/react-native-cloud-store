@@ -56,7 +56,7 @@ class CloudStoreModule : RCTEventEmitter {
     // make sure iCloud exists before doing extra things
     private func assertICloud(ifNil reject: RCTPromiseRejectBlock) -> Bool {
         guard iCloudURL != nil else {
-            reject("ERR_PATH_NOT_EXIST", "iCloud container path not exists, maybe you did not enable iCloud documents capability, please check https://react-native-cloud-store.vercel.app/docs/get-started for details", NSError(domain: domain, code: 101, userInfo: nil))
+            reject("ERR_PATH_NOT_EXIST", "iCloud container path not exists, maybe you did not enable iCloud documents capability.", NSError(domain: domain, code: 101, userInfo: nil))
             return false
         }
         return true
@@ -95,7 +95,7 @@ extension CloudStoreModule {
         if(success) {
             resolve(nil)
         } else {
-            reject("ERR_KV_SYNC", "key-value sync failed, maybe caused by: 1.You did not enable key-value storage capability, please check https://react-native-cloud-store.vercel.app/docs/get-started for details. 2.User's iCloud not available.", NSError(domain: domain, code: 701, userInfo: nil))
+            reject("ERR_KV_SYNC", "key-value sync failed, maybe caused by: You did not enable key-value storage capability.", NSError(domain: domain, code: 701, userInfo: nil))
         }
     }
 
