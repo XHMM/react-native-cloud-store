@@ -1,5 +1,5 @@
 ---
-title: Create React Native App
+title: Install with CRNA
 sidebar_position: 0
 ---
 

@@ -51,7 +51,7 @@ export enum KVStoreChangedReason {
 
 interface KVStoreChangedData {
   reason: KVStoreChangedReason;
-  changedKeys: string[];
+  changedKeys?: string[];
 }
 
 export function onICloudKVStoreRemoteChange(

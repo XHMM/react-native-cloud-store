@@ -1,5 +1,5 @@
 ---
-title: Expo
+title: Install with Expo
 sidebar_position: 1
 ---
 

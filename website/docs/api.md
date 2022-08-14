@@ -8,10 +8,10 @@ sidebar_position: 2
 import * as CloudStore from 'react-native-cloud-store'
 ```
 
-## ICloud Documents API
+## ICloud Container API
 
 ### `isICloudAvailable`
-If user's disabled your app access icloud drive, or user not logged in using apple id, this will return `false`
+If user disabled your app from accessing icloud drive, or user not logged in with apple id, this will return `false`
 ```ts
 function isICloudAvailable(): Promise<boolean>
 ```
@@ -107,18 +107,18 @@ function stat(
   localizedName?: string;
 }>
 ```
-### `upload` (IOS 13+)
-upload app local file to iCloud container
+### `upload`
+upload app's local file to iCloud container, after calling this method, `onICloudDocumentsXxxGathering` events would be triggered.
 ```ts
 function upload(
-  // `fullLocalPath` needs to manully specify a schame, such as "file://" to prevent error
+  // `fullLocalPath` needs a schame, such as "file://" to prevent error
   fullLocalPath: string,
   relativePath: string
 ): Promise<void>
 ```
 
-### `persist` (IOS 13+)
-download/persist cloud file to local device, you can only move/copy file after persisting it
+### `persist`
+download/persist icloud file(these files named with format `.fileName.icloud`) to local device, you can only move/copy file after persisting it,  after calling this method, `onICloudDocumentsXxxGathering` events would be triggered.
 ```ts
 function persist(
   relativePath: string,
@@ -133,24 +133,21 @@ This event only be called at the first search phase
 ### `onICloudDocumentsFinishGathering` (event)
 This event only be called at the first search phase
 ### `onICloudDocumentsUpdateGathering` (event)
-Use this event to listen upcoming upload/persist progress.
+**Use this event to listen upcoming upload/persist progress**
 
-If you persist a file that already downloaded to local, this event will not be called, because system no need to download your file, at this time, results appear in the above first-phase events. (you can use `downloadStatus` property returned by `stat()` to check if file was in local)
+**If you persist a file that already downloaded to local, this event will not be called**, because system no need to download your file, at this time, first-phase related events will be triggered with data. (you can use `downloadStatus` property returned by `stat()` to check if file was in local)
 
 ## Key-value Storage API
 :::info
-
-As [document](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore) said, key-value storage will always be available even if user not logged in icloud.
-
-Changes your app writes to the key-value store object are initially held in memory, then written to disk by the system at appropriate times.
+[NSUbiquitousKeyValueStore](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore):
+- Key-value storage will always be available even if user not logged in icloud.
+- Changes of the key-value store object are initially held in memory, then written to disk by the system at appropriate times.
 
 :::
 
 ### `kvSync`
 
-This method will call [synchronize()](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1415989-synchronize) to explicitly synchronizes in-memory keys and values with those stored on disk.
-
-As apple doc said, the only recommended time to call this method is upon app launch, or upon returning to the foreground, to ensure that the in-memory key-value store representation is up-to-date.
+[APPLE-DOC](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1415989-synchronize): This method will call [synchronize()](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1415989-synchronize) to explicitly synchronizes in-memory keys and values with those stored on disk.  The only recommended time to call this method is upon app launch, or upon returning to the foreground, to ensure that the in-memory key-value store representation is up-to-date.
 
 ```ts
 function kvSync(): Promise<void>
@@ -188,6 +185,7 @@ function kvGetAllItems(): Promise<Record<string, string>>
 
 
 ### `onICloudKVStoreRemoteChanged` (event)
+[APPLE-DOC](https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1412267-didchangeexternallynotification): This notification is sent only upon a change received from iCloud; it is not sent when your app sets a value.
 
 ```jsx
 const App = () => {

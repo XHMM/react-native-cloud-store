@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 
 extension String {
     func rmPrefix(_ prefix: String) -> String {
@@ -14,11 +13,6 @@ class CloudStoreModule : RCTEventEmitter {
     private var iCloudURL: URL? {
         FileManager.default.url(forUbiquityContainerIdentifier: nil)
     }
-
-    @available(iOS 13.0, *)
-    private lazy var subscriberContainer = Set<AnyCancellable>()
-    @available(iOS 13.0, *)
-    private lazy var queryContainer = Set<NSMetadataQuery>()
 
     override init() {
         super.init()
@@ -352,7 +346,7 @@ extension CloudStoreModule {
 
         let url = getFullICloudURL(relativePath)
         if(!FileManager.default.fileExists(atPath: url.path)) {
-            reject("ERR_NOT_EXIST", "file \(url.path) not exists", NSError(domain: "", code: 0))
+            reject("ERR_NOT_EXIST", "file/folder of \(url.path) not exists", NSError(domain: "", code: 0))
             return
         }
 
@@ -372,7 +366,7 @@ extension CloudStoreModule {
 
                     .ubiquitousItemHasUnresolvedConflictsKey,
 
-                .contentModificationDateKey,
+                    .contentModificationDateKey,
                 .creationDateKey,
                 .nameKey,
                 .localizedNameKey
@@ -421,7 +415,6 @@ extension CloudStoreModule {
     ///   - url:
     ///   - resolve:
     ///   - queryCallback: this callback wa used to filter data you want
-    @available(iOS 13.0, *)
     private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
@@ -444,67 +437,58 @@ extension CloudStoreModule {
         query.predicate = NSPredicate(format: "%K CONTAINS %@", NSMetadataItemPathKey,url.path)
         query.notificationBatchingInterval = 0.2
 
-        var startSub: AnyCancellable?
-        startSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query).prefix(1).sink{ [self] n in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query, queue: query.operationQueue, using: { [self] notification in
             Logger.log("[start results]:\n")
 
             let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsStartGathering", body: NSDictionary(dictionary: [
-                    "info": getChangedItems(n),
+                    "info": getChangedItems(notification),
                     "detail": res
                 ]))
             }
-        }
-        startSub?.store(in: &subscriberContainer)
+        })
 
-        var gatherSub: AnyCancellable?
-        gatherSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query).prefix(1).sink{ [self] n in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query,  queue: query.operationQueue, using: { [self] notification in
             Logger.log("[gather results]:\n")
             let (res, _) = queryCallback(query)
 
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsGathering", body: NSDictionary(dictionary: [
-                    "info": getChangedItems(n),
+                    "info": getChangedItems(notification),
                     "detail": res
                 ]))
             }
-        }
-        gatherSub?.store(in: &subscriberContainer)
+        })
 
-        var finishSub: AnyCancellable?
-        finishSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query).prefix(1).sink{ [self] n in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query,  queue: query.operationQueue, using: { [self] notification in
             Logger.log("[finish results]:\n")
             let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsFinishGathering", body: NSDictionary(dictionary: [
-                    "info": getChangedItems(n),
+                    "info": getChangedItems(notification),
                     "detail": res
                 ]))
             }
-        }
-        finishSub?.store(in: &subscriberContainer)
+        })
 
-        var updateSub: AnyCancellable?
-        updateSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidUpdate, object: query).sink{ [self] n in
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidUpdate, object: query,  queue: query.operationQueue, using: {
+            [self] notification in
             Logger.log("[update results]:\n")
             let (res, ended) = queryCallback(query)
             if ended {
                 Logger.log("persist query stopped")
                 query.stop()
-                updateSub?.cancel()
-                queryContainer.remove(query)
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidUpdate, object: query)
             }
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsUpdateGathering", body: NSDictionary(dictionary: [
-                    "info": getChangedItems(n),
+                    "info": getChangedItems(notification),
                     "detail": res
                 ]))
             }
-        }
-        updateSub?.store(in: &subscriberContainer)
+        })
 
-        queryContainer.insert(query)
         let _ = query.start()
         resolve(nil)
     }
@@ -525,11 +509,6 @@ extension CloudStoreModule {
             try copyItem(at: localURL, to: iCloudURL)
         } catch {
             reject("ERR_COPY_TO_ICLOUD", error.localizedDescription, NSError(domain: "", code: 0))
-            return
-        }
-
-        guard #available(iOS 13, *) else {
-            reject("ERR_VERSION_UNSUPPORTED", "upload events only support IOS 13+",NSError(domain: "", code: 0))
             return
         }
 
@@ -577,11 +556,6 @@ extension CloudStoreModule {
             return
         }
 
-        guard #available(iOS 13, *) else {
-            reject("ERR_VERSION_UNSUPPORTED", "persist events only support IOS 13+",NSError(domain: "", code: 0))
-            return
-        }
-
         initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { query in
             query.disableUpdates()
             var arr: [ICloudGatheringFile] = []
@@ -618,7 +592,7 @@ extension CloudStoreModule {
 
 class Logger {
     public static func log(_ items: Any...) {
-    #if DEBUG_CLOUDSTORE
+    #if DEBUG
         print(items)
     #endif
     }
