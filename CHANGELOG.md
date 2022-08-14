@@ -1,4 +1,7 @@
-## 0.x.x
+## 0.5.0
+- removed ios13 limitation
+
+## 0.4.x
 - some api names and signature changed, check documentation for current versions
 - add support for document progress event
 - bugs fix
