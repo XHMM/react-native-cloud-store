@@ -10,7 +10,6 @@ extension String {
 
 @objc(CloudStoreModule)
 class CloudStoreModule : RCTEventEmitter {
-    private let domain = "iCloudModule"
     private var hasListeners = false
     private var iCloudURL: URL? {
         FileManager.default.url(forUbiquityContainerIdentifier: nil)
@@ -54,22 +53,18 @@ class CloudStoreModule : RCTEventEmitter {
     }
 
     // make sure iCloud exists before doing extra things
-    private func assertICloud(ifNil reject: RCTPromiseRejectBlock) -> Bool {
-        guard iCloudURL != nil else {
-            reject("ERR_PATH_NOT_EXIST", "iCloud container path not exists, maybe you did not enable iCloud documents capability.", NSError(domain: domain, code: 101, userInfo: nil))
-            return false
+    private func icloudInvalid(then reject: RCTPromiseRejectBlock) -> Bool  {
+        if iCloudURL == nil {
+            reject("ERR_ICLOUD_DOWN", "iCloud container path not exists, maybe you did not enable iCloud documents capability.", NSError(domain: "", code: 0))
+            return true
         }
-        return true
+
+        return false
     }
 
-    private func createDirIfNotExists(_ dirURL: URL, ifFail reject: RCTPromiseRejectBlock) {
-        do {
-            if(!FileManager.default.fileExists(atPath: dirURL.path)) {
-                try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
-            }
-        } catch {
-            reject("ERR_CREATE_DIR", error.localizedDescription, NSError(domain: "iCloudModule", code: 102, userInfo: nil))
-            return
+    private func createDirIfNotExists(_ dirURL: URL) throws {
+        if(!FileManager.default.fileExists(atPath: dirURL.path)) {
+            try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
         }
     }
 
@@ -95,7 +90,7 @@ extension CloudStoreModule {
         if(success) {
             resolve(nil)
         } else {
-            reject("ERR_KV_SYNC", "key-value sync failed, maybe caused by: You did not enable key-value storage capability.", NSError(domain: domain, code: 701, userInfo: nil))
+            reject("ERR_KV_SYNC", "key-value sync failed, maybe caused by: You did not enable key-value storage capability.", NSError(domain: "", code: 0))
         }
     }
 
@@ -142,15 +137,20 @@ extension CloudStoreModule {
     @objc
     func writeFile(_ relativeFilePath: String, withContent content: String, withOptions options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
                    rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let override: Bool = (options["override"] as? Bool) ?? false
         let fileURL = getFullICloudURL(relativeFilePath)
 
-        createDirIfNotExists(fileURL.deletingLastPathComponent(), ifFail: reject)
+        do {
+            try createDirIfNotExists(fileURL.deletingLastPathComponent())
+        }catch {
+            reject("ERR_COMMON", error.localizedDescription, NSError(domain: "", code: 0))
+            return;
+        }
 
         if(FileManager.default.fileExists(atPath: fileURL.path) && !override) {
-            reject("ERR_FILE_EXISTS", "file \(fileURL.path) already exists and override is false, so not create file", NSError(domain: domain, code: 201, userInfo: nil))
+            reject("ERR_FILE_EXIST", "file \(fileURL.path) already exists and override is false, so not create file", NSError(domain: "", code: 0))
             return
         }
 
@@ -159,7 +159,7 @@ extension CloudStoreModule {
             resolve(nil)
             return
         } catch {
-            reject("ERR_WRITE_FILE", error.localizedDescription, NSError(domain: domain, code: 202, userInfo: nil))
+            reject("ERR_WRITE_FILE", error.localizedDescription, NSError(domain: "", code: 0))
             return
         }
     }
@@ -167,11 +167,11 @@ extension CloudStoreModule {
     @objc
     func readFile(_ relativeFilePath: String, resolver resolve: RCTPromiseResolveBlock,
                   rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil:reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let fileURL = getFullICloudURL(relativeFilePath)
         if(!FileManager.default.fileExists(atPath: fileURL.path)) {
-            reject("ERR_FILE_NOT_EXISTS", "file \(fileURL.path) not exists", NSError(domain: domain, code: 401, userInfo: nil))
+            reject("ERR_FILE_NOT_EXIST", "file \(fileURL.path) not exists", NSError(domain: "", code: 0))
             return
         }
 
@@ -179,7 +179,8 @@ extension CloudStoreModule {
             let content = try String(contentsOf: fileURL, encoding: .utf8)
             resolve(content)
         } catch {
-            reject("ERR_READ_FILE", error.localizedDescription, NSError(domain: domain, code: 402, userInfo: nil))
+            reject("ERR_READ_FILE", error.localizedDescription, NSError(domain: "", code: 0))
+            return
         }
     }
 }
@@ -189,12 +190,12 @@ extension CloudStoreModule {
     @objc
     func readDir(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                  rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let dirURL = getFullICloudURL(relativePath)
 
         if(!FileManager.default.fileExists(atPath: dirURL.path)) {
-            reject("ERR_DIR_NOT_EXISTS", "dir \(dirURL.path) not exists", NSError(domain: domain, code: 501, userInfo: nil))
+            reject("ERR_DIR_NOT_EXIST", "dir \(dirURL.path) not exist", NSError(domain: "", code: 0))
             return
         }
 
@@ -204,7 +205,7 @@ extension CloudStoreModule {
                 $0.relativePath
             })
         } catch {
-            reject("ERR_LIST_FILES", error.localizedDescription, NSError(domain: domain, code: 502, userInfo: nil))
+            reject("ERR_LIST_FILES", error.localizedDescription, NSError(domain: "", code: 0))
             return
         }
     }
@@ -212,23 +213,30 @@ extension CloudStoreModule {
     @objc
     func createDir(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                    rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
+
         let url = getFullICloudURL(relativePath, isDirectory: true)
-        createDirIfNotExists(url, ifFail: reject)
-        resolve(nil)
+        do {
+            try createDirIfNotExists(url)
+            resolve(nil)
+        }catch {
+            reject("ERR_COMMON", error.localizedDescription, NSError(domain: "", code: 0))
+            return;
+        }
     }
 
     @objc
     func moveDir(_ relativeFromPath: String, to relativeToPath: String, resolver resolve: RCTPromiseResolveBlock,
                  rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
+
         do {
             let srcDirURL = getFullICloudURL(relativeFromPath)
             let destDirURL = getFullICloudURL(relativeToPath)
             try FileManager.default.moveItem(at: srcDirURL, to: destDirURL)
             resolve(nil)
         } catch {
-            reject("ERR_MOVE_DIR", error.localizedDescription, NSError(domain: domain, code: 801, userInfo: nil))
+            reject("ERR_MOVE_DIR", error.localizedDescription, NSError(domain: "", code:0))
             return
         }
     }
@@ -255,33 +263,30 @@ struct ICloudGatheringFile {
         return dictionary as NSDictionary
     }
 }
-// https://stackoverflow.com/questions/39176196/how-to-provide-a-localized-description-with-an-error-type-in-swift
-enum MyError: LocalizedError {
-    case notExists(path: String)
 
-    public var errorDescription: String? {
-        switch self {
-        case .notExists(let path):
-            return "dest folder \"\(path)\" not exists, you need create it first"
-        }
-    }
-}
 // MARK: file or dir
 extension CloudStoreModule {
-    // The error message of `copyItem` is misleading: when dest path folder not exists, error message is src file not exists which is not the right error message, so here I handled this bad behavior
+
+    struct ERRNotExist: LocalizedError {
+        let path: String
+        var errorDescription: String? {
+            "folder of \"\(path)\" not exists, you need create it first"
+        }
+    }
+    // error message from `FileManager.default.copyItem` is misleading, when dest folder not exists, error message showed src path not exists, so manually modify error message
     private func copyItem(at: URL, to: URL) throws {
         let parentURL = to.deletingLastPathComponent()
         if FileManager.default.fileExists(atPath: parentURL.path) {
             try FileManager.default.copyItem(at: at, to: to)
         } else {
-            throw MyError.notExists(path: parentURL.path)
+            throw ERRNotExist(path:  parentURL.path)
         }
     }
 
     @objc
     func copy(_ srcRelativePath: String, to destRelativePath: String,  with options: NSDictionary, resolver resolve: RCTPromiseResolveBlock,
               rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil:reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let override = options["override"] as? Bool ?? false
 
@@ -296,7 +301,7 @@ extension CloudStoreModule {
                     resolve(nil)
                     return
                 } else {
-                    reject("ERR_DEST_EXISTS", "file or dir \"\(destURL.path)\" already exists", NSError(domain: domain, code: 303, userInfo: nil))
+                    reject("ERR_DEST_EXIST", "file or dir \"\(destURL.path)\" already exists", NSError(domain: "", code: 0))
                     return
                 }
             } else {
@@ -306,7 +311,7 @@ extension CloudStoreModule {
             }
         }
         catch {
-            reject("ERR_COPY", error.localizedDescription, NSError(domain: domain, code: 304, userInfo: nil))
+            reject("ERR_COPY", error.localizedDescription, NSError(domain: "", code: 0))
             return
         }
     }
@@ -314,7 +319,7 @@ extension CloudStoreModule {
     @objc
     func unlink(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let url = getFullICloudURL(relativePath, isDirectory: relativePath.hasSuffix("/"))
         if(!FileManager.default.fileExists(atPath: url.path)) {
@@ -325,7 +330,7 @@ extension CloudStoreModule {
         do {
             try FileManager.default.removeItem(at: url)
         } catch {
-            reject("ERR_UNLINK", error.localizedDescription, NSError(domain: domain, code: 601, userInfo: nil))
+            reject("ERR_UNLINK", error.localizedDescription, NSError(domain: "", code: 0))
             return
         }
         resolve(nil)
@@ -334,7 +339,7 @@ extension CloudStoreModule {
     @objc
     func exist(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
                rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil:reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let fileFullUrl = getFullICloudURL(relativePath)
         resolve(FileManager.default.fileExists(atPath: fileFullUrl.path))
@@ -343,11 +348,11 @@ extension CloudStoreModule {
     @objc
     func stat(_ relativePath: String, resolver resolve: RCTPromiseResolveBlock,
               rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil:reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
 
         let url = getFullICloudURL(relativePath)
         if(!FileManager.default.fileExists(atPath: url.path)) {
-            reject("ERR_NOT_EXISTS", "file \(url.path) not exists", NSError(domain: domain, code: 401, userInfo: nil))
+            reject("ERR_NOT_EXIST", "file \(url.path) not exists", NSError(domain: "", code: 0))
             return
         }
 
@@ -403,11 +408,13 @@ extension CloudStoreModule {
 
             resolve(dict)
         } catch {
-            reject("ERR_STAT", error.localizedDescription, NSError(domain: domain, code: 402, userInfo: nil))
+            reject("ERR_STAT", error.localizedDescription, NSError(domain: "", code: 0))
         }
     }
+}
 
-
+// MARK: upload, persis(download)
+extension CloudStoreModule {
     @available(iOS 13.0, *)
     private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using enumQuery: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
@@ -502,10 +509,11 @@ extension CloudStoreModule {
     @objc
     func upload(_ fullLocalPath: String, to relativePath: String, resolver resolve: @escaping RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
+
         let localURL = URL(string: fullLocalPath)
         guard let localURL = localURL else {
-            reject("ERR_INVALID_PATH", "local path \"\(fullLocalPath)\" is invalid", NSError(domain: domain, code: 801, userInfo: nil))
+            reject("ERR_INVALID_PATH", "local path \"\(fullLocalPath)\" is invalid", NSError(domain: "", code: 0))
             return
         }
         let iCloudURL = getFullICloudURL(relativePath)
@@ -513,12 +521,12 @@ extension CloudStoreModule {
         do {
             try copyItem(at: localURL, to: iCloudURL)
         } catch {
-            reject("ERR_COPY_TO_ICLOUD", error.localizedDescription, NSError(domain: domain, code: 304, userInfo: nil))
+            reject("ERR_COPY_TO_ICLOUD", error.localizedDescription, NSError(domain: "", code: 0))
             return
         }
 
         guard #available(iOS 13, *) else {
-            reject("ERR_VERSION_UNSUPPORTED", "upload events only support IOS 13+",NSError(domain: domain, code: -1, userInfo: nil))
+            reject("ERR_VERSION_UNSUPPORTED", "upload events only support IOS 13+",NSError(domain: "", code: 0))
             return
         }
 
@@ -553,7 +561,8 @@ extension CloudStoreModule {
     @objc
     func persist(_ relativePath: String, resolver resolve: @escaping RCTPromiseResolveBlock,
                  rejecter reject: RCTPromiseRejectBlock) {
-        guard assertICloud(ifNil: reject) else { return }
+        if(icloudInvalid(then: reject)) {return}
+
         let iCloudURL = getFullICloudURL(relativePath)
 
         do {
@@ -561,12 +570,12 @@ extension CloudStoreModule {
             try FileManager.default.startDownloadingUbiquitousItem(at: iCloudURL)
         } catch {
             reject("ERR_DOWNLOAD_ICLOUD_FILE", error.localizedDescription, NSError(
-                domain: domain, code: 801, userInfo: nil))
+                domain: "", code: 0))
             return
         }
 
         guard #available(iOS 13, *) else {
-            reject("ERR_VERSION_UNSUPPORTED", "persist events only support IOS 13+",NSError(domain: domain, code: -1, userInfo: nil))
+            reject("ERR_VERSION_UNSUPPORTED", "persist events only support IOS 13+",NSError(domain: "", code: 0))
             return
         }
 
