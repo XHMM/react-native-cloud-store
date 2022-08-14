@@ -415,8 +415,14 @@ extension CloudStoreModule {
 
 // MARK: upload, persis(download)
 extension CloudStoreModule {
+
+    ///  init and start query
+    /// - Parameters:
+    ///   - url:
+    ///   - resolve:
+    ///   - queryCallback: this callback wa used to filter data you want
     @available(iOS 13.0, *)
-    private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using enumQuery: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
+    private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
             let dict = NSMutableDictionary()
@@ -437,13 +443,12 @@ extension CloudStoreModule {
         query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope, NSMetadataQueryUbiquitousDataScope]
         query.predicate = NSPredicate(format: "%K CONTAINS %@", NSMetadataItemPathKey,url.path)
         query.notificationBatchingInterval = 0.2
-        // TODO: we use publisher here is for future JSI to better support such as upload('/path',{ onProgress: fn, onError: fn}) instead of listening global listeners
 
         var startSub: AnyCancellable?
         startSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query).prefix(1).sink{ [self] n in
-            print("☹️start results:")
+            Logger.log("[start results]:\n")
 
-            let (res, _) = enumQuery(query)
+            let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsStartGathering", body: NSDictionary(dictionary: [
                     "info": getChangedItems(n),
@@ -455,8 +460,8 @@ extension CloudStoreModule {
 
         var gatherSub: AnyCancellable?
         gatherSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query).prefix(1).sink{ [self] n in
-            print("😑gather results:")
-            let (res, _) = enumQuery(query)
+            Logger.log("[gather results]:\n")
+            let (res, _) = queryCallback(query)
 
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsGathering", body: NSDictionary(dictionary: [
@@ -469,9 +474,8 @@ extension CloudStoreModule {
 
         var finishSub: AnyCancellable?
         finishSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query).prefix(1).sink{ [self] n in
-            print("😶finish results:")
-
-            let (res, _) = enumQuery(query)
+            Logger.log("[finish results]:\n")
+            let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsFinishGathering", body: NSDictionary(dictionary: [
                     "info": getChangedItems(n),
@@ -483,11 +487,10 @@ extension CloudStoreModule {
 
         var updateSub: AnyCancellable?
         updateSub = NotificationCenter.default.publisher(for: NSNotification.Name.NSMetadataQueryDidUpdate, object: query).sink{ [self] n in
-            print("🤠update results:")
-
-            let (res, ended) = enumQuery(query)
+            Logger.log("[update results]:\n")
+            let (res, ended) = queryCallback(query)
             if ended {
-                print("persist query stopped")
+                Logger.log("persist query stopped")
                 query.stop()
                 updateSub?.cancel()
                 queryContainer.remove(query)
@@ -599,7 +602,7 @@ extension CloudStoreModule {
                 if downloading == false && downloadingProgress == 100 {
                     ended = true
                 }
-                print(fileItemURL," download info: isDownloading-\(String(describing: downloading)),status-\(String(describing: downloadingStatus)),progress-\(String(describing: downloadingProgress))")
+                Logger.log("[download-info]:\n","url  \(fileItemURL)\nisDownloading  \(String(describing: downloading))\nstatus  \(String(describing: downloadingStatus))\nprogress  \(String(describing: downloadingProgress))\n")
             }
 
             if !ended {
@@ -613,3 +616,10 @@ extension CloudStoreModule {
     }
 }
 
+class Logger {
+    public static func log(_ items: Any...) {
+    #if DEBUG_CLOUDSTORE
+        print(items)
+    #endif
+    }
+}
