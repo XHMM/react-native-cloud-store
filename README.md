@@ -1,4 +1,4 @@
-# react-native-cloud-store
+# React-Native-Cloud-Store
 
 A react-native module for cloud operations (currently only support iCloud drive)
 
@@ -7,8 +7,9 @@ This package is still in active developing and **will be stable until version 1.
 ## Get Started
 [Documentation](https://react-native-cloud-store.vercel.app)
 
-## Changelog
-[Changelog](./CHANGELOG.md)
+## Products
+List of products using this library
 
-## Inspiration
-This package inspired by  [react-native-icloudstore](https://github.com/manicakes/react-native-icloudstore) and [react-native-cloud-fs](https://github.com/npomfret/react-native-cloud-fs)
+<a href="https://apps.apple.com/app/%E6%9C%89%E4%B8%AA%E6%83%B3%E6%B3%95/id1572182437" target="_blank"><img width="150" alt="A-Tought app icon" src="assets/a-thought.png"/></a>
+
+<a href="https://apps.apple.com/app/%E6%9C%89%E4%B8%AA%E6%83%B3%E6%B3%95/id1572182437" target="_blank"><img width="150" alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"/></a>
