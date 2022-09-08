@@ -63,6 +63,13 @@ class CloudStoreModule : RCTEventEmitter {
     }
 
     private func getFullICloudURL(_ relativePath: String, isDirectory dir: Bool = false) -> URL  {
+        
+        if let iCloudPath = iCloudURL?.path,
+            relativePath.starts(with: iCloudPath)
+        {
+            return URL(fileURLWithPath: relativePath, isDirectory: dir)
+        }
+        
         return iCloudURL!.appendingPathComponent(relativePath.rmPrefix("/"), isDirectory: dir)
     }
 }

@@ -15,6 +15,8 @@ if (Platform.OS === 'ios' && !CloudStore) {
 }
 const eventEmitter = new NativeEventEmitter(CloudStore);
 
+export const iCloudContainerPath = CloudStore.getConstants().iCloudContainerPath
+
 export function getConstants(): {
   iCloudContainerPath: string;
 } {
