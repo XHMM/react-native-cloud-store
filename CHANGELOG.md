@@ -1,3 +1,8 @@
+## 0.6.0
+- **breaking:** removed export of `getConstants()`, you can import `iCloudContainerPath` directly
+- feature: icloud related apis now support full or relative icloud path
+- improvement: document more clear
+
 ## 0.5.0
 - removed ios13 limitation
 
