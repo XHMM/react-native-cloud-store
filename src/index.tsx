@@ -15,13 +15,13 @@ if (Platform.OS === 'ios' && !CloudStore) {
 }
 const eventEmitter = new NativeEventEmitter(CloudStore);
 
-export const iCloudContainerPath = CloudStore.getConstants().iCloudContainerPath
-
-export function getConstants(): {
+function getConstants(): {
   iCloudContainerPath: string;
 } {
   return CloudStore.getConstants();
 }
+
+export const iCloudContainerPath = getConstants().iCloudContainerPath
 
 export async function kvSync(): Promise<void> {
   return CloudStore.kvSync();
@@ -75,51 +75,51 @@ export async function isICloudAvailable(): Promise<boolean> {
 }
 
 export async function writeFile(
-  relativePath: string,
+  path: string,
   content: string,
   options?: { override?: boolean }
 ): Promise<void> {
-  return CloudStore.writeFile(relativePath, content, {
+  return CloudStore.writeFile(path, content, {
     ...options,
   });
 }
 
-export async function readFile(relativePath: string): Promise<string> {
-  return CloudStore.readFile(relativePath);
+export async function readFile(path: string): Promise<string> {
+  return CloudStore.readFile(path);
 }
 
-// if filename format is .[file-full-name-with-ext].icloud, means this file is not yet downloaded to local device
-export async function readDir(relativePath: string): Promise<string[]> {
-  return CloudStore.readDir(relativePath);
+// if returned filename format is .[file-full-name-with-ext].icloud, means this file is not yet downloaded to local device
+export async function readDir(path: string): Promise<string[]> {
+  return CloudStore.readDir(path);
 }
 
-export async function createDir(relativePath: string): Promise<void> {
-  return CloudStore.createDir(relativePath);
+export async function createDir(path: string): Promise<void> {
+  return CloudStore.createDir(path);
 }
 
 export async function moveDir(
-  relativeFromPath: string,
-  relativeToPath: string
+  pathFrom: string,
+  pathTo: string
 ): Promise<void> {
-  return CloudStore.moveDir(relativeFromPath, relativeToPath);
+  return CloudStore.moveDir(pathFrom, pathTo);
 }
 
 export async function copy(
-  srcRelativePath: string,
-  destRelativePath: string,
+  pathFrom: string,
+  pathTo: string,
   options?: { override?: boolean }
 ): Promise<void> {
-  return CloudStore.copy(srcRelativePath, destRelativePath, {
+  return CloudStore.copy(pathFrom, pathTo, {
     ...options,
   });
 }
 
-export async function unlink(relativePath: string): Promise<void> {
-  return CloudStore.unlink(relativePath);
+export async function unlink(path: string): Promise<void> {
+  return CloudStore.unlink(path);
 }
 
-export async function exist(relativePath: string): Promise<boolean> {
-  return CloudStore.exist(relativePath);
+export async function exist(path: string): Promise<boolean> {
+  return CloudStore.exist(path);
 }
 
 export interface ICloudStat {
@@ -146,19 +146,19 @@ export interface ICloudStat {
   name?: string;
   localizedName?: string;
 }
-export async function stat(relativePath: string): Promise<ICloudStat> {
-  return CloudStore.stat(relativePath);
+export async function stat(path: string): Promise<ICloudStat> {
+  return CloudStore.stat(path);
 }
 
 export async function upload(
   fullLocalPath: string,
-  relativePath: string
+  path: string
 ): Promise<void> {
-  return CloudStore.upload(fullLocalPath, relativePath);
+  return CloudStore.upload(fullLocalPath, path);
 }
 
-export async function persist(relativePath: string): Promise<void> {
-  return CloudStore.persist(relativePath);
+export async function persist(path: string): Promise<void> {
+  return CloudStore.persist(path);
 }
 
 export type DocumentsGatheringData = {

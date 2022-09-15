@@ -24,30 +24,30 @@ RCT_EXTERN_METHOD(isICloudAvailable :(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 // file
-RCT_EXTERN_METHOD(writeFile: (NSString)relativeFilePath withContent:(NSString)content withOptions:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(writeFile: (NSString)path withContent:(NSString)content withOptions:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(readFile: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(readFile: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 // dir
-RCT_EXTERN_METHOD(readDir: (NSString)relativeFilePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(readDir: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(createDir: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(createDir: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(moveDir :(NSString)relativeFromPath to:(NSString)relativeToPath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(moveDir :(NSString)pathFrom to:(NSString)pathTo resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 // file or dir
-RCT_EXTERN_METHOD(copy: (NSString)srcRelativePath to:(NSString)destRelativePath with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(copy: (NSString)pathFrom to:(NSString)pathTo with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(unlink: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(unlink: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(exist: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(exist: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(stat: (NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(stat: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(upload :(NSString)fullLocalPath to:(NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(upload :(NSString)fullLocalPath to:(NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(persist :(NSString)relativePath resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(persist :(NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 @end

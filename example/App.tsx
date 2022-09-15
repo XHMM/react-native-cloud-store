@@ -69,18 +69,7 @@ const App = () => {
             try {
               const available = await CloudStore.isICloudAvailable();
               console.log('isICloudAvailable:', available);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-
-        <Button
-          title={'getConstants'}
-          onPress={() => {
-            try {
-              const xx = CloudStore.getConstants();
-              console.log('getConstants:', xx);
+              console.log('iCloudContainerPath:', CloudStore.iCloudContainerPath);
             } catch (e) {
               console.error(e);
             }
@@ -218,8 +207,16 @@ const App = () => {
             style={styles.input}
             value={file}
             onChangeText={setFile}
-            placeholder={'file relative path'}
+            placeholder={'file path'}
           />
+
+          <TextInput
+            style={styles.input}
+            value={fileContent}
+            onChangeText={setFileContent}
+            placeholder={'file content'}
+          />
+
           <Button
             title={'stat file'}
             onPress={async () => {
@@ -232,12 +229,6 @@ const App = () => {
             }}
           />
 
-          <TextInput
-            style={styles.input}
-            value={fileContent}
-            onChangeText={setFileContent}
-            placeholder={'file content'}
-          />
           <Button
             title={'write file'}
             onPress={async () => {
@@ -253,7 +244,8 @@ const App = () => {
             title={'read file'}
             onPress={async () => {
               try {
-                const val = await CloudStore.readFile(file);
+                console.log(file);
+                const val = await CloudStore.readFile('/private/var/mobile/Library/Mobile Documents/iCloud~org~reactjs~native~example~RNCloudStoreTestAPP/Documents/fromlocal.txt');
                 console.log('read file:', val);
               } catch (e) {
                 console.error(e);
@@ -301,7 +293,7 @@ const App = () => {
             onPress={async () => {
               try {
                 await RNFS.copyFile(
-                  CloudStore.getConstants().iCloudContainerPath +
+                  CloudStore.iCloudContainerPath +
                     '/Documents/test.txt',
                   'file://' + RNFS.DocumentDirectoryPath + '/test.txt',
                 );
