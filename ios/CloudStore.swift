@@ -500,7 +500,7 @@ extension CloudStoreModule {
 
     @objc
     func upload(_ localPath: String, to path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
-                rejecter reject: RCTPromiseRejectBlock) {
+                rejecter reject: @escaping RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
         let localURL = URL(fileURLWithPath: localPath)
@@ -521,14 +521,17 @@ extension CloudStoreModule {
             for item in query.results {
                 let item = item as! NSMetadataItem
                 let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
-                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemIsUploadingKey])
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemIsUploadingKey, .ubiquitousItemUploadingErrorKey])
                 let isDir = values?.isDirectory
                 let isUploading = values?.ubiquitousItemIsUploading
                 let uploadProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentUploadedKey) as? Float
+                let error = values?.ubiquitousItemUploadingError
                 arr.append(ICloudGatheringFile(type: .upload, path: fileItemURL.path, progress: uploadProgress, isDir: isDir))
                 if isUploading == false && uploadProgress == 100 {
                     ended = true
                     resolve(nil)
+                } else if let error = error {
+                    reject("ERR_COPY_TO_ICLOUD", error.localizedDescription, error)
                 }
                 print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
             }
@@ -544,7 +547,7 @@ extension CloudStoreModule {
 
     @objc
     func persist(_ path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
-                 rejecter reject: RCTPromiseRejectBlock) {
+                 rejecter reject: @escaping RCTPromiseRejectBlock) {
         if (icloudInvalid(then: reject)) {return}
 
         let iCloudURL = getFullICloudURL(path)
@@ -567,10 +570,11 @@ extension CloudStoreModule {
                 let item = item as! NSMetadataItem
                 let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
 
-                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey])
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey, .ubiquitousItemDownloadingErrorKey])
                 let isDir = values?.isDirectory
                 let downloadingStatus = values?.ubiquitousItemDownloadingStatus
                 let downloading = values?.ubiquitousItemIsDownloading
+                let error = values?.ubiquitousItemDownloadingError
                 let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
 
                 arr.append(ICloudGatheringFile(type: .persist, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
@@ -579,6 +583,8 @@ extension CloudStoreModule {
                 if downloading == false && downloadingProgress == 100 {
                     ended = true
                     resolve(nil)
+                } else if let error = error {
+                    reject("ERR_DOWNLOAD_ICLOUD_FILE", error.localizedDescription, error)
                 }
                 Logger.log("[download-info]:\n","url  \(fileItemURL)\nisDownloading  \(String(describing: downloading))\nstatus  \(String(describing: downloadingStatus))\nprogress  \(String(describing: downloadingProgress))\n")
             }
