@@ -1,6 +1,6 @@
 ---
 title: Trouble Shooting
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 ## Why my folder and files not visible in iCloud drive folder?
