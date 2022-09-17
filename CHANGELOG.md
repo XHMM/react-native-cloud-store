@@ -1,4 +1,7 @@
-## 0.6.0
+## 0.6.1(2022-09-17)
+- fix: not correctly handle local path when using `persist`
+
+## 0.6.0(2022-09-15)
 - **breaking:** removed export of `getConstants()`, you can import `iCloudContainerPath` directly
 - feature: icloud related apis now support full or relative icloud path
 - improvement: document more clear
