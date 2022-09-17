@@ -125,7 +125,6 @@ download/persist icloud file(these files named with format `.fileName.icloud`) t
 ```ts
 function persist(
   icloudPath: string,
-  localFilePath: string
 ): Promise<void>
 ```
 
