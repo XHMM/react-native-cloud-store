@@ -499,15 +499,11 @@ extension CloudStoreModule {
     }
 
     @objc
-    func upload(_ fullLocalPath: String, to path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
+    func upload(_ localPath: String, to path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let localURL = URL(string: fullLocalPath)
-        guard let localURL = localURL else {
-            reject("ERR_INVALID_PATH", "local path \"\(fullLocalPath)\" is invalid", NSError(domain: "", code: 0))
-            return
-        }
+        let localURL = URL(fileURLWithPath: localPath)
         let iCloudURL = getFullICloudURL(path)
 
         do {

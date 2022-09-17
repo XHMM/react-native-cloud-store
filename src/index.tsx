@@ -151,10 +151,14 @@ export async function stat(path: string): Promise<ICloudStat> {
 }
 
 export async function upload(
-  fullLocalPath: string,
+  localPath: string,
   path: string
 ): Promise<void> {
-  return CloudStore.upload(fullLocalPath, path);
+  let prefix = "file://"
+  if(localPath.startsWith(prefix)) {
+    localPath = localPath.slice(prefix.length)
+  }
+  return CloudStore.upload(localPath, path);
 }
 
 export async function persist(path: string): Promise<void> {

@@ -4,16 +4,19 @@ sidebar_position: 0
 ---
 
 ## Before
-You maybe be frustrated when used wrong path format, pass file schema or not, relative or absolute path? different library has different requirements and most of them didn't clearly document.
+You maybe be frustrated if used wrong path format: passing file schema or not, relative or absolute path:
 
-Here is what this library required for path:
+- `localPath`: means you should pass a **full file path with or without schema**, for example:
+  - `file:///path/to/app/documents/my/file.txt`  ok
+  - `/path/to/app/documents/my/file.txt`  ok
+  - `/my/file.txt`  not ok
 
-- `localFilePath`: means you should pass a local file **full path/absoulte path with schema** (aka URL), for example: `"file:///path/to/app/documents/my/file.txt"`
-- `icloudPath`: means you can pass
-  - full icloud path, for example: `"/path/to/icloud-container/my/file.txt`
-  - relative icloud file path(ends or starts with '/' not matter), for example: `"my/file.txt`, `"/my/file.txt`)
 
-Passed wrong path format may waste your time for debugging.
+- `icloudPath`: means you can pass a full icloud path or relative icloud file path(ends or starts with '/' not matter), for example:
+  - `/path/to/icloud-container/my/file.txt`  ok
+  - `my/file.txt`  ok
+  - `/my/file.txt`  ok
+
 
 ## API
 ### `isICloudAvailable`
@@ -115,7 +118,7 @@ function stat(
 upload app's local file to iCloud container, after calling this method, `onICloudDocumentsXxxGathering` events would be triggered.
 ```ts
 function upload(
-  localFilePath: string,
+  localPath: string,
   icloudPath: string
 ): Promise<void>
 ```
