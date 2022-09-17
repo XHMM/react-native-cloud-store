@@ -420,7 +420,7 @@ extension CloudStoreModule {
     ///   - url:
     ///   - resolve:
     ///   - queryCallback: this callback wa used to filter data you want
-    private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
+    private func initAndStartQuery(iCloudURL url: URL, resolver resolve: RCTPromiseResolveBlock?, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
             let dict = NSMutableDictionary()
@@ -495,7 +495,7 @@ extension CloudStoreModule {
         })
 
         let _ = query.start()
-        resolve(nil)
+        resolve?(nil)
     }
 
     @objc
@@ -513,7 +513,7 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { (query) in
+        initAndStartQuery(iCloudURL: iCloudURL, resolver: nil) { (query) in
             query.disableUpdates()
 
             var arr: [ICloudGatheringFile] = []
@@ -528,6 +528,7 @@ extension CloudStoreModule {
                 arr.append(ICloudGatheringFile(type: .upload, path: fileItemURL.path, progress: uploadProgress, isDir: isDir))
                 if isUploading == false && uploadProgress == 100 {
                     ended = true
+                    resolve(nil)
                 }
                 print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
             }
@@ -544,7 +545,7 @@ extension CloudStoreModule {
     @objc
     func persist(_ path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
                  rejecter reject: RCTPromiseRejectBlock) {
-        if(icloudInvalid(then: reject)) {return}
+        if (icloudInvalid(then: reject)) {return}
 
         let iCloudURL = getFullICloudURL(path)
 
@@ -557,7 +558,8 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { query in
+        initAndStartQuery(iCloudURL: iCloudURL, resolver: nil) { query in
+            
             query.disableUpdates()
             var arr: [ICloudGatheringFile] = []
             var ended = false
@@ -576,6 +578,7 @@ extension CloudStoreModule {
                 // stop query when one file progress is 100
                 if downloading == false && downloadingProgress == 100 {
                     ended = true
+                    resolve(nil)
                 }
                 Logger.log("[download-info]:\n","url  \(fileItemURL)\nisDownloading  \(String(describing: downloading))\nstatus  \(String(describing: downloadingStatus))\nprogress  \(String(describing: downloadingProgress))\n")
             }
