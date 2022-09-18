@@ -1,8 +1,8 @@
 import React, {FC, useEffect, useState} from 'react';
-import { KeyboardAvoidingView, ScrollView, Text, TextInput, View } from 'react-native';
+import {View} from 'react-native';
 import * as CloudStore from 'react-native-cloud-store';
 import * as RNFS from 'react-native-fs';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Input from '../components/input';
 import Block from '../components/Block';
 import Button from '../components/Button';
@@ -10,30 +10,54 @@ import Button from '../components/Button';
 interface Props {}
 
 const IOSICloudScreen: FC<Props> = ({}) => {
-  const [dirForReadOnly, setDirForReadOnly] = useState('Documents');
-  const [dirForCreate, setDirForCreate] = useState('Documents/test-create');
+  const [dirForReadOnly, setDirForReadOnly] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents',
+  );
+  const [dirForCreate, setDirForCreate] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents/test-create',
+  );
 
   const [dirForMoveFrom, setDirForMoveFrom] = useState('');
   const [dirForMoveDest, setDirForMoveDest] = useState('');
 
-  const [filePathForWrite, setFilePathForWrite] = useState('Documents/test-create/demo.txt');
+  const [filePathForWrite, setFilePathForWrite] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents/test-create/demo.txt',
+  );
   const [fileContentForWrite, setFileContentForWrite] = useState('some text');
 
-  const [fileForReadOnly, setFileForReadOnly] = useState('Documents/test-create/demo.txt');
+  const [fileForReadOnly, setFileForReadOnly] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents/test-create/demo.txt',
+  );
 
-  const [fileForPersist, setFileForPersist] = useState('Documents/file-on-cloud.txt');
-  const [fileForStore, setFileForStore] = useState(RNFS.DocumentDirectoryPath+'/');
+  const [fileForDownload, setFileForDownload] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents/file-on-cloud.txt',
+  );
+  const [fileForStore, setFileForStore] = useState(
+    RNFS.DocumentDirectoryPath + '/',
+  );
 
-  const [localFilePathForWrite, setLocalFilePathForWrite] = useState(RNFS.DocumentDirectoryPath + '/local-file.txt');
-  const [localFileContentForWrite, setLocalFileContentForWrite] = useState('file content to write');
+  const [localFilePathForWrite, setLocalFilePathForWrite] = useState(
+    RNFS.DocumentDirectoryPath + '/local-file.txt',
+  );
+  const [localFileContentForWrite, setLocalFileContentForWrite] = useState(
+    'file content to write',
+  );
 
   const [fileForUpload, setFileForUpload] = useState(localFilePathForWrite);
-  const [fileUploadedTo, setFileUploadedTo] = useState('Documents/file-uploaded-from-local.txt');
+  const [fileUploadedTo, setFileUploadedTo] = useState(
+    CloudStore.defaultICloudContainerPath +
+      '/Documents/file-uploaded-from-local.txt',
+  );
 
-  const [localFilePathForDelete, setlLocalFilePathForDelete] = useState(RNFS.DocumentDirectoryPath + '/local-file.txt');
-
+  const [localFilePathForDelete, setlLocalFilePathForDelete] = useState(
+    RNFS.DocumentDirectoryPath + '/local-file.txt',
+  );
 
   useEffect(() => {
+    const r1 = CloudStore.onICloudIdentityDidChange(u => {
+      console.log(`onICloudIdentityDidChange:`, u);
+    });
+
     const r2 = CloudStore.onICloudDocumentsStartGathering(u => {
       console.log(`onICloudDocumentsStartGathering:`, u);
     });
@@ -51,6 +75,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
     });
 
     return () => {
+      r1.remove();
       r2.remove();
       r3.remove();
       r4.remove();
@@ -59,9 +84,8 @@ const IOSICloudScreen: FC<Props> = ({}) => {
   }, []);
 
   return (
-
     <KeyboardAwareScrollView
-      style={{flex:1}}
+      style={{flex: 1}}
       contentContainerStyle={{
         paddingBottom: 50,
       }}>
@@ -77,8 +101,40 @@ const IOSICloudScreen: FC<Props> = ({}) => {
             }
           }}
         />
-        <Text>iCloudContainerPath:</Text>
-        <Text selectable>{CloudStore.iCloudContainerPath}</Text>
+        <Button
+          title={'get default icloud path'}
+          onPress={() => {
+            console.log(
+              'default icloud path:',
+              CloudStore.defaultICloudContainerPath,
+            );
+          }}
+        />
+        <Button
+          title={'getICloudURL'}
+          onPress={async () => {
+            try {
+              const getICloudURL = await CloudStore.getICloudURL();
+              console.log('getICloudURL:', getICloudURL);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'getICloudURL with custom id'}
+          onPress={async () => {
+            try {
+              // apple doc said you need pass TEAMEID, actually you should not!
+              const getICloudURL = await CloudStore.getICloudURL(
+                'iCloud.org.reactjs.native.example.RNCloudStoreTestAPP',
+              );
+              console.log('getICloudURL with custom id:', getICloudURL);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
       </Block>
 
       <Block>
@@ -93,7 +149,10 @@ const IOSICloudScreen: FC<Props> = ({}) => {
             onPress={async () => {
               try {
                 const val = await CloudStore.stat(dirForReadOnly);
-                console.log(`stat of "${dirForReadOnly}":\n`, JSON.stringify(val, null, 2));
+                console.log(
+                  `stat of "${dirForReadOnly}":\n`,
+                  JSON.stringify(val, null, 2),
+                );
               } catch (e) {
                 console.error(e);
               }
@@ -104,7 +163,10 @@ const IOSICloudScreen: FC<Props> = ({}) => {
             onPress={async () => {
               try {
                 const dirs = await CloudStore.readDir(dirForReadOnly);
-                console.log(`[dirs of "${dirForReadOnly}"]:\n`, dirs.join('\n'));
+                console.log(
+                  `[dirs of "${dirForReadOnly}"]:\n`,
+                  dirs.join('\n'),
+                );
               } catch (e) {
                 console.error(e);
               }
@@ -148,7 +210,9 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           onPress={async () => {
             try {
               await CloudStore.moveDir(dirForMoveFrom, dirForMoveDest);
-              console.log(`moved from "${dirForMoveFrom}" to "${dirForMoveDest}"`);
+              console.log(
+                `moved from "${dirForMoveFrom}" to "${dirForMoveDest}"`,
+              );
             } catch (e) {
               console.error(e);
             }
@@ -157,7 +221,11 @@ const IOSICloudScreen: FC<Props> = ({}) => {
       </Block>
 
       <Block>
-        <Input value={filePathForWrite} onChangeText={setFilePathForWrite} placeholder={'file path'} />
+        <Input
+          value={filePathForWrite}
+          onChangeText={setFilePathForWrite}
+          placeholder={'file path'}
+        />
         <Input
           value={fileContentForWrite}
           onChangeText={setFileContentForWrite}
@@ -200,9 +268,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
             title={'read file'}
             onPress={async () => {
               try {
-                const val = await CloudStore.readFile(
-                  fileForReadOnly,
-                );
+                const val = await CloudStore.readFile(fileForReadOnly);
                 console.log(`read file of "${fileForReadOnly}":\n`, val);
               } catch (e) {
                 console.error(e);
@@ -226,9 +292,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
             title={'file exists'}
             onPress={async () => {
               try {
-                const val = await CloudStore.exist(
-                  fileForReadOnly,
-                );
+                const val = await CloudStore.exist(fileForReadOnly);
                 console.log(`file "${fileForReadOnly}" exists:`, val);
               } catch (e) {
                 console.error(e);
@@ -240,16 +304,16 @@ const IOSICloudScreen: FC<Props> = ({}) => {
 
       <Block>
         <Input
-          value={fileForPersist}
-          onChangeText={setFileForPersist}
+          value={fileForDownload}
+          onChangeText={setFileForDownload}
           placeholder={'file path'}
         />
         <Button
-          title={'persist/download'}
+          title={'download'}
           onPress={async () => {
             try {
-              await CloudStore.persist(fileForPersist);
-              console.log('persist called');
+              await CloudStore.download(fileForDownload);
+              console.log('download called');
             } catch (e) {
               console.error(e);
             }
@@ -262,13 +326,10 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           placeholder={'local file path'}
         />
         <Button
-          title={'copy persisted file to local'}
+          title={'copy downloaded file to local'}
           onPress={async () => {
             try {
-              await RNFS.copyFile(
-                fileForPersist,
-                fileForStore,
-              );
+              await RNFS.copyFile(fileForDownload, fileForStore);
               console.log('coped from icloud to local');
             } catch (e) {
               console.error(e);
@@ -288,7 +349,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
                 console.log(success);
               })
               .catch(err => {
-                console.error("read local dir error:",err.message);
+                console.error('read local dir error:', err.message);
               });
           }}
         />
@@ -317,7 +378,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
                 console.log('file written to local');
               })
               .catch(err => {
-                console.error('file write to local error:',err.message);
+                console.error('file write to local error:', err.message);
               });
           }}
         />
@@ -338,14 +399,13 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           title={'upload local file to icloud'}
           onPress={async () => {
             try {
-              console.log(`will upload "${fileForUpload}" to icloud "${fileUploadedTo}"`);
-              await CloudStore.upload(
-                fileForUpload,
-                fileUploadedTo,
+              console.log(
+                `will upload "${fileForUpload}" to icloud "${fileUploadedTo}"`,
               );
+              await CloudStore.upload(fileForUpload, fileUploadedTo);
               console.log('upload called');
             } catch (e) {
-              console.error("upload error:",e);
+              console.error('upload error:', e);
             }
           }}
         />
@@ -365,7 +425,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
                 console.log('deleted');
               })
               .catch(err => {
-                console.error('delete error:',err.message);
+                console.error('delete error:', err.message);
               });
           }}
         />

@@ -23,12 +23,12 @@ module.exports = () => ({
           kv: {
             enabled: true,
           },
-          documents: {
+          documents: [{
             containerId: `iCloud.xxxx`,
             enabled: true,
             visible: true,
             visibleName: `myDisplayName`,
-          },
+          }],
         },
       },
     ],

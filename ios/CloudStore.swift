@@ -7,9 +7,18 @@ extension String {
     }
 }
 
+extension FileManager {
+    func createDirIfNotExists(_ dirURL: URL) throws {
+        if(!FileManager.default.fileExists(atPath: dirURL.path)) {
+            try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
+        }
+    }
+}
+
 @objc(CloudStoreModule)
 class CloudStoreModule : RCTEventEmitter {
     private var hasListeners = false
+    private var icloudCurrentToken = FileManager.default.ubiquityIdentityToken
 
     override init() {
         super.init()
@@ -18,14 +27,26 @@ class CloudStoreModule : RCTEventEmitter {
         NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default, queue: nil) { [self] u in
             onICloudKVStoreRemoteChanged(notification: u)
         }
+
+        // icloud event
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSUbiquityIdentityDidChange, object: nil, queue: nil) { [self] u in
+            onICloudIdentityDidChange(notification: u)
+        }
     }
 
     override func supportedEvents() -> [String]! {
-        return ["onICloudKVStoreRemoteChanged", "onICloudDocumentsStartGathering", "onICloudDocumentsGathering", "onICloudDocumentsFinishGathering", "onICloudDocumentsUpdateGathering"]
+        return [
+            "onICloudKVStoreRemoteChanged",
+            "onICloudIdentityDidChange",
+            "onICloudDocumentsStartGathering",
+            "onICloudDocumentsGathering",
+            "onICloudDocumentsFinishGathering",
+            "onICloudDocumentsUpdateGathering"
+        ]
     }
 
     override func constantsToExport() -> [AnyHashable : Any] {
-        return ["iCloudContainerPath": iCloudURL?.path ?? ""]
+        return ["defaultICloudContainerPath": FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? ""]
     }
 
     @objc
@@ -95,32 +116,46 @@ extension CloudStoreModule {
 
 // MARK: icloud helpers
 extension CloudStoreModule {
-    private var iCloudURL: URL? {
-        FileManager.default.url(forUbiquityContainerIdentifier: nil)
-    }
-
-    // make sure iCloud exists before doing extra things
+    // make sure iCloud available before doing extra things
     private func icloudInvalid(then reject: RCTPromiseRejectBlock) -> Bool  {
-        if iCloudURL == nil {
-            reject("ERR_ICLOUD_DOWN", "iCloud container path not exists, maybe you did not enable iCloud documents capability.", NSError(domain: "", code: 0))
+        if FileManager.default.ubiquityIdentityToken == nil {
+            reject("ERR_ICLOUD_DOWN", "iCloud not available, maybe caused by:\n\t1. You did not enable iCloud documents capability.\n\t2.User not logged in with apple id.\n\t3.User disabled iCloud.", NSError(domain: "", code: 0))
             return true
         }
 
         return false
     }
 
-    private func createDirIfNotExists(_ dirURL: URL) throws {
-        if(!FileManager.default.fileExists(atPath: dirURL.path)) {
-            try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
+    @objc
+    func getICloudURL(_ containerIdentifier: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
+                      rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            // As doc https://developer.apple.com/documentation/foundation/filemanager/1411653-url said: Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of time to set up iCloud and return the requested URL
+            let url = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier)
+            if let url = url {
+                resolve(url.path)
+            } else {
+                reject("ERR_ICLOUD_PATH", "cannot get iCloud path, make sure you have correctly add and configured entitlements", NSError(domain: "", code: 0))
+            }
+
         }
     }
 
-    private func getFullICloudURL(_ path: String, isDirectory dir: Bool = false) -> URL  {
-        if path.starts(with: iCloudURL!.path) {
-            return URL(fileURLWithPath: path)
-        }
+    @objc
+    func onICloudIdentityDidChange(notification:Notification) {
+        if hasListeners {
+            let newToken = FileManager.default.ubiquityIdentityToken
+            var tokenChanged = false
+            if let newToken = newToken {
+                tokenChanged = !newToken.isEqual(icloudCurrentToken)
+            } else {
+                tokenChanged = icloudCurrentToken != nil
+            }
 
-        return iCloudURL!.appendingPathComponent(path.rmPrefix("/"), isDirectory: dir)
+            sendEvent(withName: "onICloudIdentityDidChange", body: [
+                "tokenChanged":  tokenChanged
+            ])
+        }
     }
 
     @objc
@@ -131,7 +166,7 @@ extension CloudStoreModule {
     }
 }
 
-// MARK: file
+// MARK: icloud file
 extension CloudStoreModule {
     @objc
     func writeFile(_ path: String, withContent content: String, withOptions options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
@@ -139,10 +174,10 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         let override: Bool = (options["override"] as? Bool) ?? false
-        let fileURL = getFullICloudURL(path)
+        let fileURL = URL(fileURLWithPath: path)
 
         do {
-            try createDirIfNotExists(fileURL.deletingLastPathComponent())
+            try FileManager.default.createDirIfNotExists(fileURL.deletingLastPathComponent())
         }catch {
             reject("ERR_COMMON", error.localizedDescription, NSError(domain: "", code: 0))
             return;
@@ -168,7 +203,7 @@ extension CloudStoreModule {
                   rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let fileURL = getFullICloudURL(path)
+        let fileURL = URL(fileURLWithPath: path)
         if(!FileManager.default.fileExists(atPath: fileURL.path)) {
             reject("ERR_FILE_NOT_EXIST", "file \(fileURL.path) not exists", NSError(domain: "", code: 0))
             return
@@ -191,7 +226,7 @@ extension CloudStoreModule {
                  rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let dirURL = getFullICloudURL(path)
+        let dirURL = URL(fileURLWithPath: path)
 
         if(!FileManager.default.fileExists(atPath: dirURL.path)) {
             reject("ERR_DIR_NOT_EXIST", "dir \(dirURL.path) not exist", NSError(domain: "", code: 0))
@@ -214,9 +249,9 @@ extension CloudStoreModule {
                    rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let url = getFullICloudURL(path, isDirectory: true)
+        let url = URL(fileURLWithPath: path, isDirectory: true)
         do {
-            try createDirIfNotExists(url)
+            try FileManager.default.createDirIfNotExists(url)
             resolve(nil)
         }catch {
             reject("ERR_COMMON", error.localizedDescription, NSError(domain: "", code: 0))
@@ -230,9 +265,9 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         do {
-            let srcDirURL = getFullICloudURL(fromPath)
-            let destDirURL = getFullICloudURL(toPath)
-            try FileManager.default.moveItem(at: srcDirURL, to: destDirURL)
+            let fromDirURL = URL(fileURLWithPath: fromPath)
+            let toDirURL = URL(fileURLWithPath: toPath)
+            try FileManager.default.moveItem(at: fromDirURL, to: toDirURL)
             resolve(nil)
         } catch {
             reject("ERR_MOVE_DIR", error.localizedDescription, NSError(domain: "", code:0))
@@ -243,7 +278,7 @@ extension CloudStoreModule {
 
 enum ICloudGatheringFileType:String{
     case upload = "upload"
-    case persist = "persist"
+    case download = "download"
 }
 struct ICloudGatheringFile {
     let type: ICloudGatheringFileType
@@ -283,28 +318,28 @@ extension CloudStoreModule {
     }
 
     @objc
-    func copy(_ srcPath: String, to destPath: String,  with options: NSDictionary, resolver resolve: RCTPromiseResolveBlock,
+    func copy(_ fromPath: String, to toPath: String,  with options: NSDictionary, resolver resolve: RCTPromiseResolveBlock,
               rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
         let override = options["override"] as? Bool ?? false
 
-        let srcURL = getFullICloudURL(srcPath)
-        let destURL = getFullICloudURL(destPath)
+        let fromURL = URL(fileURLWithPath: fromPath)
+        let toURL = URL(fileURLWithPath: toPath)
 
-        let destExists = FileManager.default.fileExists(atPath: destURL.path)
+        let destExists = FileManager.default.fileExists(atPath: toURL.path)
         do {
             if(destExists) {
                 if(override) {
-                    let _ = try FileManager.default.replaceItemAt(destURL, withItemAt: srcURL, options: .withoutDeletingBackupItem)
+                    let _ = try FileManager.default.replaceItemAt(toURL, withItemAt: fromURL, options: .withoutDeletingBackupItem)
                     resolve(nil)
                     return
                 } else {
-                    reject("ERR_DEST_EXIST", "file or dir \"\(destURL.path)\" already exists", NSError(domain: "", code: 0))
+                    reject("ERR_DEST_EXIST", "file or dir of \"\(toURL.path)\" already exists", NSError(domain: "", code: 0))
                     return
                 }
             } else {
-                try copyItem(at: srcURL, to: destURL)
+                try copyItem(at: fromURL, to: toURL)
                 resolve(nil)
                 return
             }
@@ -315,12 +350,13 @@ extension CloudStoreModule {
         }
     }
 
+    // TODO: Currently not too clearly know the difference between using setUbiquitous(..) to move/delete icloud file and below:
     @objc
     func unlink(_ path: String, resolver resolve: RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let url = getFullICloudURL(path, isDirectory: path.hasSuffix("/"))
+        let url = URL(fileURLWithPath: path)
         if(!FileManager.default.fileExists(atPath: url.path)) {
             resolve(nil)
             return;
@@ -340,7 +376,7 @@ extension CloudStoreModule {
                rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let fileFullUrl = getFullICloudURL(path)
+        let fileFullUrl = URL(fileURLWithPath: path)
         resolve(FileManager.default.fileExists(atPath: fileFullUrl.path))
     }
 
@@ -349,7 +385,7 @@ extension CloudStoreModule {
               rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let url = getFullICloudURL(path)
+        let url = URL(fileURLWithPath: path)
         if(!FileManager.default.fileExists(atPath: url.path)) {
             reject("ERR_NOT_EXIST", "file/folder of \(url.path) not exists", NSError(domain: "", code: 0))
             return
@@ -360,18 +396,18 @@ extension CloudStoreModule {
                 .isUbiquitousItemKey,
                 .ubiquitousItemContainerDisplayNameKey,
 
-                .ubiquitousItemDownloadRequestedKey,
+                    .ubiquitousItemDownloadRequestedKey,
                 .ubiquitousItemIsDownloadingKey,
                 .ubiquitousItemDownloadingStatusKey,
                 .ubiquitousItemDownloadingErrorKey,
 
-                .ubiquitousItemIsUploadedKey,
+                    .ubiquitousItemIsUploadedKey,
                 .ubiquitousItemIsUploadingKey,
                 .ubiquitousItemUploadingErrorKey,
 
-                .ubiquitousItemHasUnresolvedConflictsKey,
+                    .ubiquitousItemHasUnresolvedConflictsKey,
 
-                .contentModificationDateKey,
+                    .contentModificationDateKey,
                 .creationDateKey,
                 .nameKey,
                 .localizedNameKey
@@ -412,14 +448,12 @@ extension CloudStoreModule {
     }
 }
 
-// MARK: upload, persis/download
+// MARK: upload, download
 extension CloudStoreModule {
 
-    ///  init and start query
+    ///  init and start query, when related events triggered then gather info from query
     /// - Parameters:
-    ///   - url:
-    ///   - resolve:
-    ///   - queryCallback: this callback wa used to filter data you want
+    ///   - queryCallback: this callback was used to gather data
     private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
@@ -443,7 +477,7 @@ extension CloudStoreModule {
         query.notificationBatchingInterval = 0.2
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query, queue: query.operationQueue, using: { [self] notification in
-            Logger.log("[start results]:\n")
+            Logger.log("start results:\n")
 
             let (res, _) = queryCallback(query)
             if hasListeners {
@@ -455,7 +489,7 @@ extension CloudStoreModule {
         })
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query,  queue: query.operationQueue, using: { [self] notification in
-            Logger.log("[gather results]:\n")
+            Logger.log("gather results:\n")
             let (res, _) = queryCallback(query)
 
             if hasListeners {
@@ -467,7 +501,7 @@ extension CloudStoreModule {
         })
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query,  queue: query.operationQueue, using: { [self] notification in
-            Logger.log("[finish results]:\n")
+            Logger.log("finish results:\n")
             let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsFinishGathering", body: NSDictionary(dictionary: [
@@ -479,10 +513,10 @@ extension CloudStoreModule {
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidUpdate, object: query,  queue: query.operationQueue, using: {
             [self] notification in
-            Logger.log("[update results]:\n")
+            Logger.log("update results:\n")
             let (res, ended) = queryCallback(query)
             if ended {
-                Logger.log("persist query stopped")
+                Logger.log("download query stopped")
                 query.stop()
                 NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidUpdate, object: query)
             }
@@ -504,7 +538,7 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         let localURL = URL(fileURLWithPath: localPath)
-        let iCloudURL = getFullICloudURL(path)
+        let iCloudURL = URL(fileURLWithPath: path)
 
         do {
             try copyItem(at: localURL, to: iCloudURL)
@@ -542,13 +576,14 @@ extension CloudStoreModule {
     }
 
     @objc
-    func persist(_ path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
-                 rejecter reject: RCTPromiseRejectBlock) {
+    func download(_ path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
+                  rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
-        let iCloudURL = getFullICloudURL(path)
+        let iCloudURL = URL(fileURLWithPath: path)
 
         do {
+            try FileManager.default.evictUbiquitousItem(at: iCloudURL)
             // TODO: if url is a directory, this only download dir but not files under it, need to manually handle it, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
             try FileManager.default.startDownloadingUbiquitousItem(at: iCloudURL)
         } catch {
@@ -571,13 +606,13 @@ extension CloudStoreModule {
                 let downloading = values?.ubiquitousItemIsDownloading
                 let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
 
-                arr.append(ICloudGatheringFile(type: .persist, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
+                arr.append(ICloudGatheringFile(type: .download, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
 
                 // stop query when one file progress is 100
                 if downloading == false && downloadingProgress == 100 {
                     ended = true
                 }
-                Logger.log("[download-info]:\n","url  \(fileItemURL)\nisDownloading  \(String(describing: downloading))\nstatus  \(String(describing: downloadingStatus))\nprogress  \(String(describing: downloadingProgress))\n")
+                Logger.log("download-info:\n","url-\(fileItemURL)\nisDownloading-\(String(describing: downloading))\nstatus-\(String(describing: downloadingStatus))\nprogress-\(String(describing: downloadingProgress))\n")
             }
 
             if !ended {
@@ -593,8 +628,8 @@ extension CloudStoreModule {
 
 class Logger {
     public static func log(_ items: Any...) {
-        #if DEBUG
-        print(items)
-        #endif
+#if DEBUG
+        print("[cloud-store] ", items)
+#endif
     }
 }
