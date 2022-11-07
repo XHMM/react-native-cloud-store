@@ -1,3 +1,10 @@
+## 0.7.0-beta(2022-11-08)
+- **breaking:** `iCloudContainerPath` renamed to `defaultICloudContainerPath`
+- **breaking:** `persist` renamed to `download`
+- **breaking:** icloud path do not support relative path now, you must pass an absolute path
+- feature: support pass custom container id
+- feature: add new `onICloudIdentityDidChange` event
+
 ## 0.6.1(2022-09-17)
 - fix: not correctly handle local path when using `persist`
 
