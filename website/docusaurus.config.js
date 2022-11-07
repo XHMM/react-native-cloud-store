@@ -24,7 +24,12 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/facebook/docusaurus/edit/main/website/',
+          editUrl: 'https://github.com/XHMM/react-native-cloud-store/edit/main/website/',
+          versions: {
+            current: {
+              label: `0.7.0-beta`,
+            },
+          },
         },
         blog: {
           showReadingTime: true,
@@ -49,10 +54,9 @@ const config = {
         },
         items: [
           {
-            type: 'doc',
-            docId: 'introduction',
+            type: 'docsVersionDropdown',
             position: 'right',
-            label: 'Docs',
+            dropdownActiveClassDisabled: true,
           },
           {
             href: 'https://github.com/XHMM/react-native-cloud-store',

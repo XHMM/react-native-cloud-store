@@ -4,21 +4,21 @@ sidebar_position: 0
 ---
 
 ## Before
-You maybe be frustrated if used wrong path format: passing file schema or not, relative or absolute path:
+You maybe be frustrated if used wrong path format, should I add file schema or not, should I use relative or absolute path:
 
-- `icloudPath`: means you should pass a full icloud path, for example:
-  - `/path/to/icloud-container/my/file.txt`  ok
-  - `file:///path/to/icloud-container/my/file.txt`  not ok
-  - `my/file.txt`  not ok
-  - `/my/file.txt`  not ok
+- `icloudPath` means you should pass a **full icloud path without schema**, for example:
+  - `/path/to/icloud-container/my/file.txt`  ✅
+  - `file:///path/to/icloud-container/my/file.txt`  ❌
+  - `my/file.txt`  ❌
+  - `/my/file.txt`  ❌
 
-  Why not support relative path?
-  Because app may have multiple icloud containers, path handling on app-side is not too trivial and can reduce library complexity.
+  **Why not support relative path anymore?**
+  Because one APP may have multiple icloud containers, before we directly passed empty id which means system will choose the first container, now with the support of passing custom container id, we will not know which container you will use.
 
-- `localPath`: means you should pass a **full file path with or without schema**, for example:
-  - `file:///path/to/app/documents/my/file.txt`  ok
-  - `/path/to/app/documents/my/file.txt`  ok
-  - `/my/file.txt`  not ok
+- `localPath` means you should pass a **full file path with or without schema**, for example:
+  - `/path/to/app/documents/my/file.txt`  ✅
+  - `file:///path/to/app/documents/my/file.txt`  ✅
+  - `/my/file.txt`  ❌
 
 
 
