@@ -1,4 +1,4 @@
-## 0.7.0-beta(2022-11-08)
+## 0.7.0(2022-11-09)
 - **breaking:** `iCloudContainerPath` renamed to `defaultICloudContainerPath`
 - **breaking:** `persist` renamed to `download`
 - **breaking:** icloud path do not support relative path now, you must pass an absolute path
