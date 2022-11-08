@@ -3,7 +3,7 @@ title: Introduction
 sidebar_position: 0
 ---
 
-:::caution
+:::info
 This package is still in developing and will **be stable until version 1.0.0 release**, feedbacks are welcomed
 :::
 
