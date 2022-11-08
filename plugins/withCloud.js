@@ -65,4 +65,4 @@ const withCloudPlugin = (config, options) => {
 };
 
 // should use `createRunOncePlugin` wrap，or `pluginHistory` of output of `expo config --type prebuild`  will not print this plugin
-module.exports = createRunOncePlugin(withCloudPlugin, 'with-cloud', '0.0.1');
+module.exports = createRunOncePlugin(withCloudPlugin, 'with-cloud', '0.0.2');
