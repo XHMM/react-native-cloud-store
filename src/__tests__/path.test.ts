@@ -7,6 +7,8 @@ describe("PathUtils test", () => {
     expect(() => {
       PathUtils.subPath('/a/b/', 'c/d')
     }).toThrow()
+
+    expect(PathUtils.subPath("a/b", "/a/b")).toBe("/");
   })
 
   it('join', () => {
@@ -15,7 +17,14 @@ describe("PathUtils test", () => {
   })
 
   it('iCloudRemoveDotExt', () => {
-    expect(PathUtils.iCloudRemoveDotExt('a/.b.icloud')).toBe('a/b')
+    expect(
+      PathUtils.iCloudRemoveDotExt(".backup.db.icloud")
+    ).toBe("backup.db");
+    expect(
+      PathUtils.iCloudRemoveDotExt(
+        "/Documents/backup/.backup.db.icloud"
+      )
+    ).toBe("/Documents/backup/backup.db");
   })
 
   it('ext', () => {
