@@ -1,5 +1,4 @@
 import CloudStore, { eventEmitter } from './module';
-import { u } from './path';
 
 function getConstants(): {
   defaultICloudContainerPath: string;
@@ -150,4 +149,12 @@ export function onICloudDocumentsUpdateGathering(
   fn: DocumentsGatheringEventHandler
 ) {
   return eventEmitter.addListener('onICloudDocumentsUpdateGathering', fn);
+}
+
+function u(path: string): string {
+  let prefix = "file://"
+  if(path.startsWith(prefix)) {
+    path = path.slice(prefix.length)
+  }
+  return path
 }

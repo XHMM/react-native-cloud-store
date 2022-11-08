@@ -135,7 +135,7 @@ extension CloudStoreModule {
             if let url = url {
                 resolve(url.path)
             } else {
-                reject("ERR_ICLOUD_PATH", "cannot get iCloud path, make sure you have correctly add and configured entitlements", NSError(domain: "", code: 0))
+                reject("ERR_ICLOUD_PATH", "cannot get iCloud path, make sure you passed a right container id and correctly configured entitlements", NSError(domain: "", code: 0))
             }
 
         }

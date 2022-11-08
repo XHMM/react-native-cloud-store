@@ -1,6 +1,7 @@
 import React, {FC, useEffect, useState} from 'react';
 import {View} from 'react-native';
 import * as CloudStore from 'react-native-cloud-store';
+import { PathUtils, defaultICloudContainerPath } from 'react-native-cloud-store';
 import * as RNFS from 'react-native-fs';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Input from '../components/input';
@@ -11,26 +12,26 @@ interface Props {}
 
 const IOSICloudScreen: FC<Props> = ({}) => {
   const [dirForReadOnly, setDirForReadOnly] = useState(
-    CloudStore.defaultICloudContainerPath + '/Documents',
+    PathUtils.join(defaultICloudContainerPath, 'Documents'),
   );
   const [dirForCreate, setDirForCreate] = useState(
-    CloudStore.defaultICloudContainerPath + '/Documents/test-create',
+    PathUtils.join(defaultICloudContainerPath, '/Documents/test-create'),
   );
 
   const [dirForMoveFrom, setDirForMoveFrom] = useState('');
   const [dirForMoveDest, setDirForMoveDest] = useState('');
 
   const [filePathForWrite, setFilePathForWrite] = useState(
-    CloudStore.defaultICloudContainerPath + '/Documents/test-create/demo.txt',
+    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.tx'),
   );
   const [fileContentForWrite, setFileContentForWrite] = useState('some text');
 
   const [fileForReadOnly, setFileForReadOnly] = useState(
-    CloudStore.defaultICloudContainerPath + '/Documents/test-create/demo.txt',
+    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.tx'),
   );
 
   const [fileForDownload, setFileForDownload] = useState(
-    CloudStore.defaultICloudContainerPath + '/Documents/file-on-cloud.txt',
+    PathUtils.join(defaultICloudContainerPath, 'Documents/file-on-cloud.txt'),
   );
   const [fileForStore, setFileForStore] = useState(
     RNFS.DocumentDirectoryPath + '/',
