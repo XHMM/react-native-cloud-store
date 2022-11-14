@@ -48,9 +48,9 @@ function getICloudURL(
 ### `writeFile`
 ```ts
 function writeFile(
-  icloudPath: string,
-  content: string,
-  options: {override: boolean}
+    icloudPath: string,
+    content: string,
+    options: {override: boolean}
 ): Promise<void>
 ```
 
@@ -78,8 +78,8 @@ function createDir(
 ### `moveDir`
 ```ts
 function moveDir(
-  icloudPathFrom: string,
-  icloudPathTo: string
+    icloudPathFrom: string,
+    icloudPathTo: string
 ): Promise<void>
 ```
 

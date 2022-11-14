@@ -25,13 +25,15 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/XHMM/react-native-cloud-store/edit/main/website/',
-          lastVersion: '0.7',
-          includeCurrentVersion: false,
-          versions: {
-            // current: {
-            //   label: `0.7(beta)`,
-            // },
-          },
+
+          // uncomment when developing
+
+          // includeCurrentVersion: true,
+          // versions: {
+          //   current: {
+          //     label: `Next`,
+          //   },
+          // },
         },
         blog: {
           showReadingTime: true,
