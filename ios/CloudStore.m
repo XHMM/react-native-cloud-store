@@ -25,7 +25,7 @@ RCT_EXTERN_METHOD(getICloudURL :(NSString)containerIdentifier resolver:(RCTPromi
 RCT_EXTERN_METHOD(isICloudAvailable :(RCTPromiseResolveBlock)resolve                                     rejecter: (RCTPromiseRejectBlock)reject)
 
 // file
-RCT_EXTERN_METHOD(writeFile: (NSString)path withContent:(NSString)content withOptions:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(writeFile: (NSString)path withContent:(NSString)content with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(readFile: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
@@ -46,9 +46,9 @@ RCT_EXTERN_METHOD(exist: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(stat: (NSString)path resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(upload :(NSString)fullLocalPath to:(NSString)path resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(upload :(NSString)fullLocalPath to:(NSString)path with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(download :(NSString)path resolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(download :(NSString)path with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 @end

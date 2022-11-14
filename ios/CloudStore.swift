@@ -169,7 +169,7 @@ extension CloudStoreModule {
 // MARK: icloud file
 extension CloudStoreModule {
     @objc
-    func writeFile(_ path: String, withContent content: String, withOptions options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
+    func writeFile(_ path: String, withContent content: String, with options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
                    rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
@@ -454,7 +454,7 @@ extension CloudStoreModule {
     ///  init and start query, when related events triggered then gather info from query
     /// - Parameters:
     ///   - queryCallback: this callback was used to gather data
-    private func initAndStartQuery(iCloudURL url: URL, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
+    private func initAndStartQuery(iCloudURL url: URL, id: String, resolver resolve: @escaping RCTPromiseResolveBlock, using queryCallback: @escaping (_ query: NSMetadataQuery) -> (NSMutableArray,Bool)) {
         func getChangedItems(_ notif: Notification) -> NSDictionary {
             // https://developer.apple.com/documentation/coreservices/file_metadata/mdquery/query_result_change_keys
             let dict = NSMutableDictionary()
@@ -482,6 +482,7 @@ extension CloudStoreModule {
             let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsStartGathering", body: NSDictionary(dictionary: [
+                    "id": id,
                     "info": getChangedItems(notification),
                     "detail": res
                 ]))
@@ -494,6 +495,7 @@ extension CloudStoreModule {
 
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsGathering", body: NSDictionary(dictionary: [
+                    "id": id,
                     "info": getChangedItems(notification),
                     "detail": res
                 ]))
@@ -505,6 +507,7 @@ extension CloudStoreModule {
             let (res, _) = queryCallback(query)
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsFinishGathering", body: NSDictionary(dictionary: [
+                    "id": id,
                     "info": getChangedItems(notification),
                     "detail": res
                 ]))
@@ -522,6 +525,7 @@ extension CloudStoreModule {
             }
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsUpdateGathering", body: NSDictionary(dictionary: [
+                    "id": id,
                     "info": getChangedItems(notification),
                     "detail": res
                 ]))
@@ -533,10 +537,11 @@ extension CloudStoreModule {
     }
 
     @objc
-    func upload(_ localPath: String, to path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
+    func upload(_ localPath: String, to path: String, with options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
+        let id = (options["id"] as! String)
         let localURL = URL(fileURLWithPath: localPath)
         let iCloudURL = URL(fileURLWithPath: path)
 
@@ -547,7 +552,7 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { (query) in
+        initAndStartQuery(iCloudURL: iCloudURL,id: id, resolver: resolve) { (query) in
             query.disableUpdates()
 
             var arr: [ICloudGatheringFile] = []
@@ -576,10 +581,11 @@ extension CloudStoreModule {
     }
 
     @objc
-    func download(_ path: String, resolver resolve: @escaping RCTPromiseResolveBlock,
+    func download(_ path: String, with options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock,
                   rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
+        let id = (options["id"] as! String)
         let iCloudURL = URL(fileURLWithPath: path)
 
         do {
@@ -592,7 +598,7 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL, resolver: resolve) { query in
+        initAndStartQuery(iCloudURL: iCloudURL,id:id, resolver: resolve) { query in
             query.disableUpdates()
             var arr: [ICloudGatheringFile] = []
             var ended = false

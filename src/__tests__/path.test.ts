@@ -25,6 +25,9 @@ describe("PathUtils test", () => {
         "/Documents/backup/.backup.db.icloud"
       )
     ).toBe("/Documents/backup/backup.db");
+    expect(
+      PathUtils.iCloudRemoveDotExt("/Documents/backup/backup.db")
+    ).toBe("/Documents/backup/backup.db");
   })
 
   it('ext', () => {

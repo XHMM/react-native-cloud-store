@@ -1,4 +1,5 @@
 import CloudStore, { eventEmitter } from './module';
+import { PathUtils } from './path';
 
 function getConstants(): {
   defaultICloudContainerPath: string;
@@ -93,16 +94,127 @@ export async function stat(path: string): Promise<ICloudStat> {
   return CloudStore.stat(path);
 }
 
+let calledGlobalUploadEvent = false
+let uploadId = 0;
+const uploadId2CallbackDataMap: Record<string, {
+  path: string
+  callback: (data: {progress: number}) => void
+}> = {}
+
+let calledGlobalDownloadEvent = false
+let downloadId = 0;
+const downloadId2CallbackDataMap: Record<string, {
+  path: string
+  callback: (data: {progress: number}) => void
+}> = {}
+
+
 export async function upload(
   localPath: string,
-  path: string
+  path: string,
+  options?: {
+    onProgress: (data: {progress: number;}) => void
+  }
 ): Promise<void> {
-  return CloudStore.upload(u(localPath), path);
+  uploadId++
+
+  if(options?.onProgress) {
+    if(!calledGlobalUploadEvent) {
+      console.error(`You haven't call registerGlobalUploadEvent(), onProgress will not be triggered `)
+    }
+    uploadId2CallbackDataMap[uploadId] = {
+      path: path,
+      callback: options.onProgress
+    }
+  }
+
+  return CloudStore.upload(u(localPath), path, {
+    id: uploadId.toString()
+  });
 }
 
-export async function download(path: string): Promise<void> {
-  return CloudStore.download(path);
+export async function download(
+  path: string,
+  options?: {
+    onProgress: (data: {progress: number;}) => void
+  }
+): Promise<void> {
+  downloadId++
+
+  const fileInfo = await CloudStore.stat(path);
+  if (
+    fileInfo.downloadStatus ===
+    "NSURLUbiquitousItemDownloadingStatusCurrent"
+  ) {
+    options?.onProgress({progress: 100})
+    return Promise.resolve()
+  }
+
+  const pathWithoutDot = PathUtils.iCloudRemoveDotExt(path);
+
+  if(options?.onProgress) {
+    if(!calledGlobalDownloadEvent) {
+      console.error(`You haven't call registerGlobalDownloadEvent(), onProgress will not be triggered `)
+    }
+    downloadId2CallbackDataMap[downloadId] = {
+      path: pathWithoutDot,
+      callback: options.onProgress
+    }
+  }
+  return CloudStore.download(pathWithoutDot, {
+    id: downloadId.toString()
+  });
 }
+
+export function registerGlobalUploadEvent() {
+  if(calledGlobalUploadEvent) {
+    return
+  }
+  calledGlobalUploadEvent = true
+  return onICloudDocumentsUpdateGathering((data) => {
+    const callbackData = uploadId2CallbackDataMap[data.id]
+    if(!callbackData) return
+    const {path, callback} = callbackData
+    const uploadTarget = data.detail.find(
+      (i) =>
+        i.type === "upload" &&
+        i.path === path
+    );
+    if (uploadTarget) {
+      const progress = uploadTarget.progress??0
+      if(progress === 100) {
+        delete uploadId2CallbackDataMap[uploadId]
+      }
+      callback({progress: progress})
+    }
+  })
+}
+
+export function registerGlobalDownloadEvent() {
+  if(calledGlobalDownloadEvent) {
+    return
+  }
+  calledGlobalDownloadEvent = true
+  return onICloudDocumentsUpdateGathering((data) => {
+    const callbackData = downloadId2CallbackDataMap[data.id]
+    if(!callbackData) return
+    const {path, callback} = callbackData
+
+    const downloadTarget = data.detail.find(
+      (i) =>
+        i.type === "download" &&
+        i.path === path
+    );
+    if (downloadTarget) {
+      const progress = downloadTarget.progress??0
+      if(progress === 100) {
+        delete downloadId2CallbackDataMap[uploadId]
+      }
+      callback({progress: progress})
+    }
+  })
+}
+
 
 export function onICloudIdentityDidChange(
   fn: (data: {tokenChanged: boolean}) => void
@@ -111,6 +223,7 @@ export function onICloudIdentityDidChange(
 }
 
 export type DocumentsGatheringData = {
+  id: string
   info: {
     added: string[];
     changed: string[];
