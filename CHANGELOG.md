@@ -1,3 +1,7 @@
+## 0.8.0(2022-11-15)
+- feature: `donwload` and `upload` now support `onProgress`
+- add `registerGlobalDownloadEvent` and `registerGlobalUploadEvent`
+
 ## 0.7.0(2022-11-09)
 - **breaking:** `iCloudContainerPath` renamed to `defaultICloudContainerPath`
 - **breaking:** `persist` renamed to `download`
