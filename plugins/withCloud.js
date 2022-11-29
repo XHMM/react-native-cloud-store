@@ -8,7 +8,7 @@ const withCloudPlugin = (config, options) => {
   const { iCloud } = options;
 
   if (iCloud) {
-    const { kv = {}, documents = [] } = iCloud;
+    const { kv = {}, documents = [], environment ='Production' } = iCloud;
 
     config = withEntitlementsPlist(config, async (config) => {
       const e = config.modResults;
@@ -22,6 +22,7 @@ const withCloudPlugin = (config, options) => {
       e['com.apple.developer.icloud-container-identifiers'] = [];
       e['com.apple.developer.icloud-services'] = ['CloudDocuments'];
       e['com.apple.developer.ubiquity-container-identifiers'] = [];
+      e['com.apple.developer.icloud-container-environment'] = environment;
       if(documents.length) {
         documents.filter(doc => doc.enabled).map(doc => {
           const id = doc.containerId;
