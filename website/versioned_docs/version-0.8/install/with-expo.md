@@ -36,12 +36,15 @@ module.exports = () => ({
               visible: false
             }
           ],
+          environment: 'Production' // 'Production' or 'Development'
         },
       },
     ],
   ],
 });
 ```
+
+- You need to set `environment` if occurred [this error](https://github.com/XHMM/react-native-cloud-store/issues/7) when building
 
 ## Step3
 1. Run the following command to prebuild your project:
