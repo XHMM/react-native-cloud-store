@@ -1,3 +1,6 @@
+## 0.8.1(2022-12-01)
+- fix: expo building error for ios ([#7](https://github.com/XHMM/react-native-cloud-store/issues/7))
+
 ## 0.8.0(2022-11-15)
 - feature: `donwload` and `upload` now support `onProgress`
 - add `registerGlobalDownloadEvent` and `registerGlobalUploadEvent`
