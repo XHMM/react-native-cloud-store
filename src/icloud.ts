@@ -89,6 +89,8 @@ export interface ICloudStat {
   createTimestamp?: number;
   name?: string;
   localizedName?: string;
+  fileSize?: number;
+  isDirectory?: boolean;
 }
 export async function stat(path: string): Promise<ICloudStat> {
   return CloudStore.stat(path);

@@ -410,7 +410,9 @@ extension CloudStoreModule {
                     .contentModificationDateKey,
                 .creationDateKey,
                 .nameKey,
-                .localizedNameKey
+                .localizedNameKey,
+                .fileSizeKey,
+                .isDirectoryKey
             ])
             let dict = NSMutableDictionary()
 
@@ -440,6 +442,8 @@ extension CloudStoreModule {
             }
             dict["name"] = resources.name
             dict["localizedName"] = resources.localizedName
+            dict["fileSize"] = resources.fileSize
+            dict["isDirectory"] = resources.isDirectory
 
             resolve(dict)
         } catch {
