@@ -1,3 +1,6 @@
+## 0.9.0(2022-12-17)
+- feat: `state` will return `fileSize` and `isDirectory` ([#11](https://github.com/XHMM/react-native-cloud-store/pull/11))
+
 ## 0.8.1(2022-12-01)
 - fix: expo building error for ios ([#7](https://github.com/XHMM/react-native-cloud-store/issues/7))
 
