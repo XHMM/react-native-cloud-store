@@ -3,7 +3,7 @@
 A react-native module for cloud operations (currently only support iCloud drive)
 
 ## Get Started
-[Documentation](https://react-native-cloud-store.vercel.app)
+[Documentation](https://react-native-cloud-store.vercel.app/docs/install/with-crna)
 
 ## Products
 List of products using this library

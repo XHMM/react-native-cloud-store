@@ -166,7 +166,7 @@ extension CloudStoreModule {
     }
 }
 
-// MARK: icloud file
+// MARK: icloud file functions
 extension CloudStoreModule {
     @objc
     func writeFile(_ path: String, withContent content: String, with options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
@@ -350,7 +350,7 @@ extension CloudStoreModule {
         }
     }
 
-    // TODO: Currently not too clearly know the difference between using setUbiquitous(..) to move/delete icloud file and below:
+    // TODO: I'm not too clearly know about the difference between using setUbiquitous(..) to move/delete icloud file and below way:
     @objc
     func unlink(_ path: String, resolver resolve: RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
@@ -396,18 +396,18 @@ extension CloudStoreModule {
                 .isUbiquitousItemKey,
                 .ubiquitousItemContainerDisplayNameKey,
 
-                    .ubiquitousItemDownloadRequestedKey,
+                .ubiquitousItemDownloadRequestedKey,
                 .ubiquitousItemIsDownloadingKey,
                 .ubiquitousItemDownloadingStatusKey,
                 .ubiquitousItemDownloadingErrorKey,
 
-                    .ubiquitousItemIsUploadedKey,
+                .ubiquitousItemIsUploadedKey,
                 .ubiquitousItemIsUploadingKey,
                 .ubiquitousItemUploadingErrorKey,
 
-                    .ubiquitousItemHasUnresolvedConflictsKey,
+                .ubiquitousItemHasUnresolvedConflictsKey,
 
-                    .contentModificationDateKey,
+                .contentModificationDateKey,
                 .creationDateKey,
                 .nameKey,
                 .localizedNameKey,

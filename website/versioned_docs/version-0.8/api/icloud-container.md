@@ -132,6 +132,8 @@ function stat(
   createTimestamp?: number;
   name?: string;
   localizedName?: string;
+  fileSize?: number;
+  isDirectory?: boolean;
 }>
 ```
 
