@@ -1,3 +1,4 @@
+import { Platform } from 'react-native'
 import CloudStore, { eventEmitter } from './module';
 import { PathUtils } from './path';
 
@@ -7,7 +8,7 @@ function getConstants(): {
   return CloudStore.getConstants();
 }
 
-export const defaultICloudContainerPath = getConstants().defaultICloudContainerPath
+export const defaultICloudContainerPath = Platform.OS === 'ios' ? getConstants().defaultICloudContainerPath: { }
 
 // https://developer.apple.com/documentation/foundation/filemanager/1411653-url
 export async function getICloudURL(containerIdentifier?: string): Promise<string> {
