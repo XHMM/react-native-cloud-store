@@ -3,12 +3,13 @@ import CloudStore, { eventEmitter } from './module';
 import { PathUtils } from './path';
 
 function getConstants(): {
-  defaultICloudContainerPath: string;
+  defaultICloudContainerPath?: string;
 } {
-  return CloudStore.getConstants();
+  // TODO: android not implement getConstants method, so here just return an empty object
+  return Platform.OS === 'ios' ? CloudStore.getConstants() : {};
 }
 
-export const defaultICloudContainerPath = Platform.OS === 'ios' ? getConstants().defaultICloudContainerPath: { }
+export const defaultICloudContainerPath = getConstants().defaultICloudContainerPath
 
 // https://developer.apple.com/documentation/foundation/filemanager/1411653-url
 export async function getICloudURL(containerIdentifier?: string): Promise<string> {

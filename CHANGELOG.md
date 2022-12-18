@@ -1,3 +1,6 @@
+## 0.9.1(2022-12-18)
+- fix: error when running on android due to `getConstants()` call  ([#12](https://github.com/XHMM/react-native-cloud-store/pull/12))
+
 ## 0.9.0(2022-12-17)
 - feat: `state` will return `fileSize` and `isDirectory` ([#11](https://github.com/XHMM/react-native-cloud-store/pull/11))
 

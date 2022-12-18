@@ -31,7 +31,7 @@ function isICloudAvailable(): Promise<boolean>
 
 
 ### `defaultICloudContainerPath`
-Get the default(the first icloud container selected in xcode settings) container url string, it would be empty string if cannot get, for example: your developer account not create a container, or not choose a container
+Get the default(the first icloud container selected in xcode settings) container url string, it would be empty string or undefined if we cannot get it, for example: get it under android platform, or your apple developer account did not create a container or not choose a container
 
 ```ts
 import { defaultICloudContainerPath } from 'react-native-cloud-store'
