@@ -168,7 +168,7 @@ extension CloudStoreModule {
     @objc
     func getDefaultICloudContainerPath(_ resolve: RCTPromiseResolveBlock,
                            rejecter reject: RCTPromiseRejectBlock) {
-        let path = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? ""
+        let path = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? nil;
         resolve(path)
     }
 }

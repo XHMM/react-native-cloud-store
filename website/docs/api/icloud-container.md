@@ -29,12 +29,23 @@ If user disabled your app from accessing icloud drive, or user not logged in wit
 function isICloudAvailable(): Promise<boolean>
 ```
 
-
 ### `defaultICloudContainerPath`
-Get the default(the first icloud container selected in xcode settings) container url string, it would be empty string if cannot get, for example: your developer account not create a container, or not choose a container
+Get the default(the first icloud container selected in xcode settings) container url string.
+
+This would be empty string if cannot get, for example: your developer account not create a container, or not choose a container
+
+**warning**: this property was set on app startup and will not change even if user disabled or enabled icloud, you can use `getDefaultICloudContainerPath()` to get the always new path.
 
 ```ts
 import { defaultICloudContainerPath } from 'react-native-cloud-store'
+```
+
+### `getDefaultICloudContainerPath`
+Get current default container url, this function will always return newest path.
+
+This would be `undefined` if cannot get.
+```ts
+function getDefaultICloudContainerPath(): Promise<string | undefined>
 ```
 
 ### `getICloudURL`

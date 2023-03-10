@@ -106,9 +106,16 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           title={'get default icloud path'}
           onPress={() => {
             console.log(
-              'default icloud path:',
+              'default icloud path from constants:',
               CloudStore.defaultICloudContainerPath,
             );
+
+            CloudStore.getDefaultICloudContainerPath().then(p => {
+              console.log(
+                'default icloud path from function:',
+                p,
+              );
+            })
           }}
         />
         <Button
