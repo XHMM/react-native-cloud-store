@@ -23,6 +23,7 @@ RCT_EXTERN_METHOD(kvGetAllItems :(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getICloudURL :(NSString)containerIdentifier resolver:(RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(isICloudAvailable :(RCTPromiseResolveBlock)resolve                                     rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getDefaultICloudContainerPath :(RCTPromiseResolveBlock)resolve                                     rejecter: (RCTPromiseRejectBlock)reject)
 
 // file
 RCT_EXTERN_METHOD(writeFile: (NSString)path withContent:(NSString)content with:(NSDictionary)options resolver:(RCTPromiseResolveBlock)resolve

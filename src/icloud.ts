@@ -11,6 +11,10 @@ function getConstants(): {
 
 export const defaultICloudContainerPath = getConstants().defaultICloudContainerPath
 
+export async function getDefaultICloudContainerPath(): Promise<string | undefined> {
+  return Platform.OS === 'ios' && CloudStore.getDefaultICloudContainerPath();
+}
+
 // https://developer.apple.com/documentation/foundation/filemanager/1411653-url
 export async function getICloudURL(containerIdentifier?: string): Promise<string> {
   return CloudStore.getICloudURL(containerIdentifier);
