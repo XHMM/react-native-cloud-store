@@ -164,6 +164,13 @@ extension CloudStoreModule {
         let token = FileManager.default.ubiquityIdentityToken
         resolve(token != nil)
     }
+
+    @objc
+    func getDefaultICloudContainerPath(_ resolve: RCTPromiseResolveBlock,
+                           rejecter reject: RCTPromiseRejectBlock) {
+        let path = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.path ?? ""
+        resolve(path)
+    }
 }
 
 // MARK: icloud file functions
