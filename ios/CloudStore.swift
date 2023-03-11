@@ -176,12 +176,13 @@ extension CloudStoreModule {
 // MARK: icloud file functions
 extension CloudStoreModule {
     @objc
-    func writeFile(_ path: String, withContent content: String, with options: NSDictionary,resolver resolve: RCTPromiseResolveBlock,
+    func writeFile(_ path: String, withContent content: String, with options: NSDictionary,resolver resolve: @escaping RCTPromiseResolveBlock,
                    rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
         let override: Bool = (options["override"] as? Bool) ?? false
         let fileURL = URL(fileURLWithPath: path)
+        let id = (options["id"] as? String)
 
         do {
             try FileManager.default.createDirIfNotExists(fileURL.deletingLastPathComponent())
@@ -196,8 +197,12 @@ extension CloudStoreModule {
         }
 
         do {
-            try content.data(using: .utf8)?.write(to: fileURL)
-            resolve(nil)
+            try content.data(using: .utf8)?.write(to: fileURL, options: .atomic)
+            if let id = id {
+                listenUpload(iCloudURL: fileURL, id: id, resolver: resolve)
+            } else {
+                resolve(nil)
+            }
             return
         } catch {
             reject("ERR_WRITE_FILE", error.localizedDescription, NSError(domain: "", code: 0))
@@ -547,6 +552,69 @@ extension CloudStoreModule {
         resolve(nil)
     }
 
+    private func listenUpload(iCloudURL: URL,id: String, resolver: @escaping RCTPromiseResolveBlock) {
+        initAndStartQuery(iCloudURL: iCloudURL,id: id, resolver: resolver) { (query) in
+            query.disableUpdates()
+            
+            var arr: [ICloudGatheringFile] = []
+            var ended = false
+            for item in query.results {
+                let item = item as! NSMetadataItem
+                let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemIsUploadingKey])
+                let isDir = values?.isDirectory
+                let isUploading = values?.ubiquitousItemIsUploading
+                let uploadProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentUploadedKey) as? Float
+                arr.append(ICloudGatheringFile(type: .upload, path: fileItemURL.path, progress: uploadProgress, isDir: isDir))
+                if isUploading == false && uploadProgress == 100 {
+                    ended = true
+                }
+                print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
+            }
+            
+            let m: NSMutableArray = NSMutableArray()
+            m.addObjects(from: arr.map{$0.nsDictionary})
+            if !ended {
+                query.enableUpdates()
+            }
+            return (m, ended)
+        }
+    }
+    
+    private func listenDownload(iCloudURL: URL,id: String, resolver: @escaping RCTPromiseResolveBlock) {
+        initAndStartQuery(iCloudURL: iCloudURL,id:id, resolver: resolver) { query in
+            query.disableUpdates()
+            var arr: [ICloudGatheringFile] = []
+            var ended = false
+            for item in query.results {
+                let item = item as! NSMetadataItem
+                let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
+                
+                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey])
+                let isDir = values?.isDirectory
+                let downloadingStatus = values?.ubiquitousItemDownloadingStatus
+                let downloading = values?.ubiquitousItemIsDownloading
+                let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
+                
+                arr.append(ICloudGatheringFile(type: .download, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
+                
+                // stop query when one file progress is 100
+                if downloading == false && downloadingProgress == 100 {
+                    ended = true
+                }
+                Logger.log("download-info:\n","url-\(fileItemURL)\nisDownloading-\(String(describing: downloading))\nstatus-\(String(describing: downloadingStatus))\nprogress-\(String(describing: downloadingProgress))\n")
+            }
+            
+            if !ended {
+                query.enableUpdates()
+            }
+            
+            let m: NSMutableArray = NSMutableArray()
+            m.addObjects(from: arr.map{$0.nsDictionary})
+            return (m,ended)
+        }
+    }
+    
     @objc
     func upload(_ localPath: String, to path: String, with options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
@@ -563,32 +631,7 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL,id: id, resolver: resolve) { (query) in
-            query.disableUpdates()
-
-            var arr: [ICloudGatheringFile] = []
-            var ended = false
-            for item in query.results {
-                let item = item as! NSMetadataItem
-                let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
-                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemIsUploadingKey])
-                let isDir = values?.isDirectory
-                let isUploading = values?.ubiquitousItemIsUploading
-                let uploadProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentUploadedKey) as? Float
-                arr.append(ICloudGatheringFile(type: .upload, path: fileItemURL.path, progress: uploadProgress, isDir: isDir))
-                if isUploading == false && uploadProgress == 100 {
-                    ended = true
-                }
-                print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
-            }
-
-            let m: NSMutableArray = NSMutableArray()
-            m.addObjects(from: arr.map{$0.nsDictionary})
-            if !ended {
-                query.enableUpdates()
-            }
-            return (m, ended)
-        }
+        listenUpload(iCloudURL: iCloudURL,id: id, resolver: resolve)
     }
 
     @objc
@@ -609,37 +652,7 @@ extension CloudStoreModule {
             return
         }
 
-        initAndStartQuery(iCloudURL: iCloudURL,id:id, resolver: resolve) { query in
-            query.disableUpdates()
-            var arr: [ICloudGatheringFile] = []
-            var ended = false
-            for item in query.results {
-                let item = item as! NSMetadataItem
-                let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
-
-                let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey])
-                let isDir = values?.isDirectory
-                let downloadingStatus = values?.ubiquitousItemDownloadingStatus
-                let downloading = values?.ubiquitousItemIsDownloading
-                let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
-
-                arr.append(ICloudGatheringFile(type: .download, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
-
-                // stop query when one file progress is 100
-                if downloading == false && downloadingProgress == 100 {
-                    ended = true
-                }
-                Logger.log("download-info:\n","url-\(fileItemURL)\nisDownloading-\(String(describing: downloading))\nstatus-\(String(describing: downloadingStatus))\nprogress-\(String(describing: downloadingProgress))\n")
-            }
-
-            if !ended {
-                query.enableUpdates()
-            }
-
-            let m: NSMutableArray = NSMutableArray()
-            m.addObjects(from: arr.map{$0.nsDictionary})
-            return (m,ended)
-        }
+        listenDownload(iCloudURL: iCloudURL,id:id, resolver: resolve)
     }
 }
 

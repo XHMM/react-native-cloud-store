@@ -27,10 +27,29 @@ export async function isICloudAvailable(): Promise<boolean> {
 export async function writeFile(
   path: string,
   content: string,
-  options?: { override?: boolean }
+  options?: {
+    override?: boolean
+    onProgress?: (data: {progress: number;}) => void
+  }
 ): Promise<void> {
+  let canProgress = false;
+
+  if(options?.onProgress) {
+    if(!calledGlobalUploadEvent) {
+      console.error(`You didn't call registerGlobalUploadEvent(), onProgress will not be triggered `)
+    } else {
+      uploadId++
+      uploadId2CallbackDataMap[uploadId] = {
+        path: path,
+        callback: options.onProgress
+      }
+      canProgress = true;
+    }
+  }
+
   return CloudStore.writeFile(path, content, {
     ...options,
+    id: canProgress ? uploadId.toString() : undefined
   });
 }
 
@@ -128,7 +147,7 @@ export async function upload(
 
   if(options?.onProgress) {
     if(!calledGlobalUploadEvent) {
-      console.error(`You haven't call registerGlobalUploadEvent(), onProgress will not be triggered `)
+      console.error(`You didn't call registerGlobalUploadEvent(), onProgress will not be triggered `)
     }
     uploadId2CallbackDataMap[uploadId] = {
       path: path,
@@ -162,7 +181,7 @@ export async function download(
 
   if(options?.onProgress) {
     if(!calledGlobalDownloadEvent) {
-      console.error(`You haven't call registerGlobalDownloadEvent(), onProgress will not be triggered `)
+      console.error(`You didn't call registerGlobalDownloadEvent(), onProgress will not be triggered `)
     }
     downloadId2CallbackDataMap[downloadId] = {
       path: pathWithoutDot,

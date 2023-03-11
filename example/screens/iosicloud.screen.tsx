@@ -22,7 +22,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
   const [dirForMoveDest, setDirForMoveDest] = useState('');
 
   const [filePathForWrite, setFilePathForWrite] = useState(
-    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.tx'),
+    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.txt'),
   );
   const [fileContentForWrite, setFileContentForWrite] = useState('some text');
 
@@ -53,6 +53,16 @@ const IOSICloudScreen: FC<Props> = ({}) => {
   const [localFilePathForDelete, setlLocalFilePathForDelete] = useState(
     RNFS.DocumentDirectoryPath + '/local-file.txt',
   );
+
+  useEffect(() => {
+    const r1 = CloudStore.registerGlobalDownloadEvent()
+    const r2 = CloudStore.registerGlobalUploadEvent()
+
+    return () => {
+      r1?.remove();
+      r2?.remove();
+    }
+  }, [])
 
   useEffect(() => {
     const r1 = CloudStore.onICloudIdentityDidChange(u => {
@@ -244,8 +254,25 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           title={'write file'}
           onPress={async () => {
             try {
-              await CloudStore.writeFile(filePathForWrite, fileContentForWrite);
+              await CloudStore.writeFile(filePathForWrite, fileContentForWrite, {
+                override: true
+              });
               console.log('wrote file');
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        />
+        <Button
+          title={'write file with onProgress'}
+          onPress={async () => {
+            try {
+              await CloudStore.writeFile(filePathForWrite, new Array(10000).fill("sth").join(","),  {
+                override: true,
+                onProgress(data) {
+                  console.log('write file progress:', data);
+                }
+              });
             } catch (e) {
               console.error(e);
             }
