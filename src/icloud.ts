@@ -1,4 +1,4 @@
-import { Platform } from 'react-native'
+import { EmitterSubscription, Platform } from 'react-native';
 import CloudStore, { eventEmitter } from './module';
 import { PathUtils } from './path';
 
@@ -35,7 +35,7 @@ export async function writeFile(
   let canProgress = false;
 
   if(options?.onProgress) {
-    if(!calledGlobalUploadEvent) {
+    if(!globalUploadSubscription) {
       console.error(`You didn't call registerGlobalUploadEvent(), onProgress will not be triggered `)
     } else {
       uploadId++
@@ -121,14 +121,14 @@ export async function stat(path: string): Promise<ICloudStat> {
   return CloudStore.stat(path);
 }
 
-let calledGlobalUploadEvent = false
+let globalUploadSubscription: EmitterSubscription | undefined = undefined
 let uploadId = 0;
 const uploadId2CallbackDataMap: Record<string, {
   path: string
   callback: (data: {progress: number}) => void
 }> = {}
 
-let calledGlobalDownloadEvent = false
+let globalDownloadSubscription: EmitterSubscription | undefined = undefined
 let downloadId = 0;
 const downloadId2CallbackDataMap: Record<string, {
   path: string
@@ -146,7 +146,7 @@ export async function upload(
   uploadId++
 
   if(options?.onProgress) {
-    if(!calledGlobalUploadEvent) {
+    if(!globalUploadSubscription) {
       console.error(`You didn't call registerGlobalUploadEvent(), onProgress will not be triggered `)
     }
     uploadId2CallbackDataMap[uploadId] = {
@@ -180,7 +180,7 @@ export async function download(
   const pathWithoutDot = PathUtils.iCloudRemoveDotExt(path);
 
   if(options?.onProgress) {
-    if(!calledGlobalDownloadEvent) {
+    if(!globalDownloadSubscription) {
       console.error(`You didn't call registerGlobalDownloadEvent(), onProgress will not be triggered `)
     }
     downloadId2CallbackDataMap[downloadId] = {
@@ -194,11 +194,11 @@ export async function download(
 }
 
 export function registerGlobalUploadEvent() {
-  if(calledGlobalUploadEvent) {
-    return
+  if(globalUploadSubscription) {
+    return globalUploadSubscription
   }
-  calledGlobalUploadEvent = true
-  return onICloudDocumentsUpdateGathering((data) => {
+
+  globalUploadSubscription = onICloudDocumentsUpdateGathering((data) => {
     const callbackData = uploadId2CallbackDataMap[data.id]
     if(!callbackData) return
     const {path, callback} = callbackData
@@ -215,14 +215,16 @@ export function registerGlobalUploadEvent() {
       callback({progress: progress})
     }
   })
+
+  return globalUploadSubscription
 }
 
 export function registerGlobalDownloadEvent() {
-  if(calledGlobalDownloadEvent) {
-    return
+  if(globalDownloadSubscription) {
+    return globalDownloadSubscription
   }
-  calledGlobalDownloadEvent = true
-  return onICloudDocumentsUpdateGathering((data) => {
+
+  globalDownloadSubscription = onICloudDocumentsUpdateGathering((data) => {
     const callbackData = downloadId2CallbackDataMap[data.id]
     if(!callbackData) return
     const {path, callback} = callbackData
@@ -240,6 +242,7 @@ export function registerGlobalDownloadEvent() {
       callback({progress: progress})
     }
   })
+  return globalDownloadSubscription
 }
 
 

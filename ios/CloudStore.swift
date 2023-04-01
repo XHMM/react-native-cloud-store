@@ -432,6 +432,7 @@ extension CloudStoreModule {
             dict["containerDisplayName"] = resources.ubiquitousItemContainerDisplayName
 
             dict["isDownloading"] = resources.ubiquitousItemIsDownloading
+            // TODO: curious why this is always `false` for calling `download` for a folder, maybe due to files under the folder was not downloaded entirely? have a test when your're free.
             dict["hasCalledDownload"] = resources.ubiquitousItemDownloadRequested
             dict["downloadStatus"] = resources.ubiquitousItemDownloadingStatus
             dict["downloadError"] = resources.ubiquitousItemDownloadingError?.localizedDescription
@@ -644,7 +645,7 @@ extension CloudStoreModule {
 
         do {
             try FileManager.default.evictUbiquitousItem(at: iCloudURL)
-            // TODO: if url is a directory, this only download dir but not files under it, need to manually handle it, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
+            // TODO: if url is a directory, this only download dir itself but not include files under it, you need to recurisvely download files of folder, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
             try FileManager.default.startDownloadingUbiquitousItem(at: iCloudURL)
         } catch {
             reject("ERR_DOWNLOAD_ICLOUD_FILE", error.localizedDescription, NSError(
