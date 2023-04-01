@@ -1,3 +1,10 @@
+## 0.10.2
+- fix: event not be removed correctly
+
+## 0.10.0
+- feat: `onProgress` support for `writeFile`
+- feat: add `getDefaultICloudContainerPath()` to solve #13 (thanks to @gutenye)
+
 ## 0.9.1(2022-12-18)
 - fix: error when running on android due to `getConstants()` call  ([#12](https://github.com/XHMM/react-native-cloud-store/pull/12))
 
