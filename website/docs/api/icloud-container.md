@@ -159,7 +159,7 @@ import { useEffect } from 'react';
 useEffect(() => {
   const uploadEvent = registerGlobalUploadEvent()
   return () => {
-    uploadEvent.remove()
+    uploadEvent?.remove()
   }
 }, [])
 ```
@@ -173,7 +173,7 @@ import { useEffect } from 'react';
 useEffect(() => {
   const downloadEvent = registerGlobalDownloadEvent()
   return () => {
-    downloadEvent.remove()
+    downloadEvent?.remove()
   }
 }, [])
 ```
