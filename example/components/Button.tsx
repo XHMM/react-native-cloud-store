@@ -11,13 +11,13 @@ const Button: FC<Props & TouchableWithoutFeedbackProps> = ({title, ...rest}) => 
 
 const styles = StyleSheet.create({
   button: {
-    marginVertical: 10,
+    marginVertical: 5,
     flexShrink:0,
     flexGrow:1,
-    marginHorizontal:10,
-    paddingVertical: 15,
+    marginHorizontal: 5,
+    paddingVertical: 5,
     alignItems:'center',
-    borderRadius:10,
+    borderRadius:5,
     borderColor:'black',
     backgroundColor:'orange'
   },

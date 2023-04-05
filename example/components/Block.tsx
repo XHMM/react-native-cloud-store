@@ -7,8 +7,8 @@ const Block: FC<Props> = ({children}) => {
   return (
     <View
       style={{
-        padding: 10,
-        margin: 20,
+        padding: 5,
+        margin: 10,
         borderRadius: 10,
         backgroundColor: 'white',
         elevation: 2,
