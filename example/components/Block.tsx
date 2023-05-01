@@ -1,9 +1,11 @@
 import React, {FC} from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 
-interface Props {}
+interface Props {
+  label?: string
+}
 
-const Block: FC<Props> = ({children}) => {
+const Block: FC<Props> = ({children, label}) => {
   return (
     <View
       style={{
@@ -20,6 +22,9 @@ const Block: FC<Props> = ({children}) => {
         },
         shadowOpacity: 0.05,
       }}>
+      <Text style={{
+        fontSize: 10
+      }}>{label}</Text>
       {children}
     </View>
   );

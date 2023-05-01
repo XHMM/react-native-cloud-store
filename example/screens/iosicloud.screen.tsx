@@ -1,68 +1,26 @@
 import React, {FC, useEffect, useState} from 'react';
-import {View} from 'react-native';
+import { ScrollView, View } from 'react-native';
 import * as CloudStore from 'react-native-cloud-store';
-import { PathUtils, defaultICloudContainerPath } from 'react-native-cloud-store';
+import {PathUtils, defaultICloudContainerPath} from 'react-native-cloud-store';
 import * as RNFS from 'react-native-fs';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Input from '../components/input';
 import Block from '../components/Block';
 import Button from '../components/Button';
+import {DirReader} from 'react-native-dir-viewer';
+import {Dirs} from 'react-native-file-access';
 
 interface Props {}
 
 const IOSICloudScreen: FC<Props> = ({}) => {
-  const [dirForReadOnly, setDirForReadOnly] = useState(
-    PathUtils.join(defaultICloudContainerPath, 'Documents'),
-  );
-  const [dirForCreate, setDirForCreate] = useState(
-    PathUtils.join(defaultICloudContainerPath, '/Documents/test-create'),
-  );
-
-  const [dirForMoveFrom, setDirForMoveFrom] = useState('');
-  const [dirForMoveDest, setDirForMoveDest] = useState('');
-
-  const [filePathForWrite, setFilePathForWrite] = useState(
-    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.txt'),
-  );
-  const [fileContentForWrite, setFileContentForWrite] = useState('some text');
-
-  const [fileForReadOnly, setFileForReadOnly] = useState(
-    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.tx'),
-  );
-
-  const [fileForDownload, setFileForDownload] = useState(
-    PathUtils.join(defaultICloudContainerPath, 'Documents/file-on-cloud.txt'),
-  );
-  const [fileForStore, setFileForStore] = useState(
-    RNFS.DocumentDirectoryPath + '/',
-  );
-
-  const [localFilePathForWrite, setLocalFilePathForWrite] = useState(
-    RNFS.DocumentDirectoryPath + '/local-file.txt',
-  );
-  const [localFileContentForWrite, setLocalFileContentForWrite] = useState(
-    'file content to write',
-  );
-
-  const [fileForUpload, setFileForUpload] = useState(localFilePathForWrite);
-  const [fileUploadedTo, setFileUploadedTo] = useState(
-    CloudStore.defaultICloudContainerPath +
-      '/Documents/file-uploaded-from-local.txt',
-  );
-
-  const [localFilePathForDelete, setlLocalFilePathForDelete] = useState(
-    RNFS.DocumentDirectoryPath + '/local-file.txt',
-  );
-
   useEffect(() => {
-    const r1 = CloudStore.registerGlobalDownloadEvent()
-    const r2 = CloudStore.registerGlobalUploadEvent()
+    const r1 = CloudStore.registerGlobalDownloadEvent();
+    const r2 = CloudStore.registerGlobalUploadEvent();
 
     return () => {
       r1?.remove();
       r2?.remove();
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     const r1 = CloudStore.onICloudIdentityDidChange(u => {
@@ -95,331 +53,417 @@ const IOSICloudScreen: FC<Props> = ({}) => {
   }, []);
 
   return (
-    <KeyboardAwareScrollView
-      style={{flex: 1}}
-      contentContainerStyle={{
-        paddingBottom: 50,
+    <View style={{
+      flex: 1
+    }}>
+      <ScrollView style={{
+        backgroundColor: 'skyblue',
+        width: '100%',
+        flexBasis: '40%'
       }}>
-      <Block>
-        <Button
-          title={'isICloudAvailable'}
-          onPress={async () => {
-            try {
-              const available = await CloudStore.isICloudAvailable();
-              console.log('isICloudAvailable:', available);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-        <Button
-          title={'get default icloud path'}
-          onPress={() => {
-            console.log(
-              'default icloud path from constants:',
-              CloudStore.defaultICloudContainerPath,
+        <DirReader baseDir={Dirs.DocumentDir} listHeight={80}/>
+        <DirReader baseDir={PathUtils.join(defaultICloudContainerPath, 'Documents')} listHeight={200} />
+      </ScrollView>
+      <ScrollView
+        style={{flexGrow: 1}}
+        contentContainerStyle={{
+          paddingBottom: 50,
+        }}>
+        <Demo1 />
+        <Demo2 />
+        <Demo3 />
+        <Demo4 />
+        <Demo5 />
+        <Demo6 />
+        <View style={{height: 1, borderWidth: 1, borderColor: 'gray'}} />
+        <Demo7 />
+        <Demo10 />
+      </ScrollView>
+    </View>
+
+  );
+};
+
+const Demo1 = () => {
+  return (
+    <Block label={'demo1'}>
+      <Button
+        title={'isICloudAvailable'}
+        onPress={async () => {
+          try {
+            const available = await CloudStore.isICloudAvailable();
+            console.log('isICloudAvailable:', available);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+      <Button
+        title={'get default icloud path'}
+        onPress={() => {
+          console.log(
+            'default icloud path from constants:',
+            CloudStore.defaultICloudContainerPath,
+          );
+
+          CloudStore.getDefaultICloudContainerPath().then(p => {
+            console.log('default icloud path from function:', p);
+          });
+        }}
+      />
+      <Button
+        title={'getICloudURL'}
+        onPress={async () => {
+          try {
+            const getICloudURL = await CloudStore.getICloudURL();
+            console.log('getICloudURL:', getICloudURL);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+      <Button
+        title={'getICloudURL with custom id'}
+        onPress={async () => {
+          try {
+            // apple doc said you need pass TEAMEID, actually you should not!
+            const getICloudURL = await CloudStore.getICloudURL(
+              'iCloud.org.reactjs.native.example.RNCloudStoreTestAPP',
             );
+            console.log('getICloudURL with custom id:', getICloudURL);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </Block>
+  );
+};
+const Demo2 = () => {
+  const [dirForReadOnly, setDirForReadOnly] = useState(
+    PathUtils.join(defaultICloudContainerPath, 'Documents'),
+  );
 
-            CloudStore.getDefaultICloudContainerPath().then(p => {
+  return (
+    <Block label={'demo2'}>
+      <Input
+        value={dirForReadOnly}
+        onChangeText={setDirForReadOnly}
+        placeholder={'icloud dir (relative) path'}
+      />
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <Button
+          title={'stat dir'}
+          onPress={async () => {
+            try {
+              const val = await CloudStore.stat(dirForReadOnly);
               console.log(
-                'default icloud path from function:',
-                p,
-              );
-            })
-          }}
-        />
-        <Button
-          title={'getICloudURL'}
-          onPress={async () => {
-            try {
-              const getICloudURL = await CloudStore.getICloudURL();
-              console.log('getICloudURL:', getICloudURL);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-        <Button
-          title={'getICloudURL with custom id'}
-          onPress={async () => {
-            try {
-              // apple doc said you need pass TEAMEID, actually you should not!
-              const getICloudURL = await CloudStore.getICloudURL(
-                'iCloud.org.reactjs.native.example.RNCloudStoreTestAPP',
-              );
-              console.log('getICloudURL with custom id:', getICloudURL);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-      </Block>
-
-      <Block>
-        <Input
-          value={dirForReadOnly}
-          onChangeText={setDirForReadOnly}
-          placeholder={'icloud dir (relative) path'}
-        />
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Button
-            title={'stat dir'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.stat(dirForReadOnly);
-                console.log(
-                  `stat of "${dirForReadOnly}":\n`,
-                  JSON.stringify(val, null, 2),
-                );
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'read dir'}
-            onPress={async () => {
-              try {
-                const dirs = await CloudStore.readDir(dirForReadOnly);
-                console.log(
-                  `[dirs of "${dirForReadOnly}"]:\n`,
-                  dirs.join('\n'),
-                );
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-        </View>
-      </Block>
-
-      <Block>
-        <Input
-          value={dirForCreate}
-          onChangeText={setDirForCreate}
-          placeholder={'dir relative path'}
-        />
-        <Button
-          title={'create dir'}
-          onPress={async () => {
-            try {
-              await CloudStore.createDir(dirForCreate);
-              console.log(`created dir "${dirForCreate}"`);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-      </Block>
-
-      <Block>
-        <Input
-          value={dirForMoveFrom}
-          onChangeText={setDirForMoveFrom}
-          placeholder={'from dir path'}
-        />
-        <Input
-          value={dirForMoveDest}
-          onChangeText={setDirForMoveDest}
-          placeholder={'to dir path'}
-        />
-        <Button
-          title={'move dir'}
-          onPress={async () => {
-            try {
-              await CloudStore.moveDir(dirForMoveFrom, dirForMoveDest);
-              console.log(
-                `moved from "${dirForMoveFrom}" to "${dirForMoveDest}"`,
+                `stat of "${dirForReadOnly}":\n`,
+                JSON.stringify(val, null, 2),
               );
             } catch (e) {
               console.error(e);
             }
           }}
         />
-      </Block>
-
-      <Block>
-        <Input
-          value={filePathForWrite}
-          onChangeText={setFilePathForWrite}
-          placeholder={'file path'}
-        />
-        <Input
-          value={fileContentForWrite}
-          onChangeText={setFileContentForWrite}
-          placeholder={'file content'}
-        />
-
         <Button
-          title={'write file'}
+          title={'read dir'}
           onPress={async () => {
             try {
-              await CloudStore.writeFile(filePathForWrite, fileContentForWrite, {
-                override: true
-              });
-              console.log('wrote file');
+              const dirs = await CloudStore.readDir(dirForReadOnly);
+              console.log(`[dirs of "${dirForReadOnly}"]:\n`, dirs.join('\n'));
             } catch (e) {
               console.error(e);
             }
           }}
         />
-        <Button
-          title={'write file with onProgress'}
-          onPress={async () => {
-            try {
-              await CloudStore.writeFile(filePathForWrite, new Array(10000).fill("sth").join(","),  {
+      </View>
+    </Block>
+  );
+};
+const Demo3 = () => {
+  const [dirForCreate, setDirForCreate] = useState(
+    PathUtils.join(defaultICloudContainerPath, '/Documents/test-create'),
+  );
+  return (
+    <Block  label={'demo3'}>
+      <Input
+        value={dirForCreate}
+        onChangeText={setDirForCreate}
+        placeholder={'dir relative path'}
+      />
+      <Button
+        title={'create dir'}
+        onPress={async () => {
+          try {
+            await CloudStore.createDir(dirForCreate);
+            console.log(`created dir "${dirForCreate}"`);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </Block>
+  );
+};
+const Demo4 = () => {
+  const [dirForMoveFrom, setDirForMoveFrom] = useState('');
+  const [dirForMoveDest, setDirForMoveDest] = useState('');
+
+  return (
+    <Block  label={'demo4'}>
+      <Input
+        value={dirForMoveFrom}
+        onChangeText={setDirForMoveFrom}
+        placeholder={'from dir path'}
+      />
+      <Input
+        value={dirForMoveDest}
+        onChangeText={setDirForMoveDest}
+        placeholder={'to dir path'}
+      />
+      <Button
+        title={'move dir'}
+        onPress={async () => {
+          try {
+            await CloudStore.moveDir(dirForMoveFrom, dirForMoveDest);
+            console.log(
+              `moved from "${dirForMoveFrom}" to "${dirForMoveDest}"`,
+            );
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </Block>
+  );
+};
+const Demo5 = () => {
+  const [filePathForWrite, setFilePathForWrite] = useState(
+    PathUtils.join(
+      defaultICloudContainerPath,
+      'Documents/test-create/demo.txt',
+    ),
+  );
+  const [fileContentForWrite, setFileContentForWrite] = useState('some text');
+  return (
+    <Block label={'demo5'}>
+      <Input
+        value={filePathForWrite}
+        onChangeText={setFilePathForWrite}
+        placeholder={'file path'}
+      />
+      <Input
+        value={fileContentForWrite}
+        onChangeText={setFileContentForWrite}
+        placeholder={'file content'}
+      />
+
+      <Button
+        title={'write file'}
+        onPress={async () => {
+          try {
+            await CloudStore.writeFile(filePathForWrite, fileContentForWrite, {
+              override: true,
+            });
+            console.log('wrote file');
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+      <Button
+        title={'write file with onProgress'}
+        onPress={async () => {
+          try {
+            await CloudStore.writeFile(
+              filePathForWrite,
+              new Array(10000).fill('sth').join(','),
+              {
                 override: true,
                 onProgress(data) {
                   console.log('write file progress:', data);
-                }
-              });
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-      </Block>
-
-      <Block>
-        <Input
-          value={fileForReadOnly}
-          onChangeText={setFileForReadOnly}
-          placeholder={'file path'}
-        />
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Button
-            title={'stat file'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.stat(fileForReadOnly);
-                console.log(`stat of "${fileForReadOnly}":\n`, val);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-
-          <Button
-            title={'read file'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.readFile(fileForReadOnly);
-                console.log(`read file of "${fileForReadOnly}":\n`, val);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-        </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Button
-            title={'remove file'}
-            onPress={async () => {
-              try {
-                await CloudStore.unlink(fileForReadOnly);
-                console.log(`removed file of "${fileForReadOnly}"`);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-          <Button
-            title={'file exists'}
-            onPress={async () => {
-              try {
-                const val = await CloudStore.exist(fileForReadOnly);
-                console.log(`file "${fileForReadOnly}" exists:`, val);
-              } catch (e) {
-                console.error(e);
-              }
-            }}
-          />
-        </View>
-      </Block>
-
-      <Block>
-        <Input
-          value={fileForDownload}
-          onChangeText={setFileForDownload}
-          placeholder={'file path'}
-        />
+                },
+              },
+            );
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </Block>
+  );
+};
+const Demo6 = () => {
+  const [fileForReadOnly, setFileForReadOnly] = useState(
+    PathUtils.join(defaultICloudContainerPath, 'Documents/test-create/demo.tx'),
+  );
+  return (
+    <Block label={'demo6'}>
+      <Input
+        value={fileForReadOnly}
+        onChangeText={setFileForReadOnly}
+        placeholder={'file path'}
+      />
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <Button
-          title={'download'}
+          title={'stat file'}
           onPress={async () => {
             try {
-              await CloudStore.download(fileForDownload);
-              console.log('download called');
+              const val = await CloudStore.stat(fileForReadOnly);
+              console.log(`stat of "${fileForReadOnly}":\n`, val);
             } catch (e) {
               console.error(e);
             }
           }}
         />
 
-        <Input
-          value={fileForStore}
-          onChangeText={setFileForStore}
-          placeholder={'local file path'}
-        />
         <Button
-          title={'copy downloaded file to local'}
+          title={'read file'}
           onPress={async () => {
             try {
-              await RNFS.copyFile(fileForDownload, fileForStore);
-              console.log('coped from icloud to local');
+              const val = await CloudStore.readFile(fileForReadOnly);
+              console.log(`read file of "${fileForReadOnly}":\n`, val);
             } catch (e) {
               console.error(e);
             }
           }}
         />
-      </Block>
-
-      <View style={{height: 1, borderWidth: 1, borderColor: 'gray'}} />
-
-      <Block>
+      </View>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <Button
-          title={'list local documents folder files'}
-          onPress={() => {
-            RNFS.readDir(RNFS.DocumentDirectoryPath)
-              .then(success => {
-                console.log(success);
-              })
-              .catch(err => {
-                console.error('read local dir error:', err.message);
-              });
+          title={'remove file'}
+          onPress={async () => {
+            try {
+              await CloudStore.unlink(fileForReadOnly);
+              console.log(`removed file of "${fileForReadOnly}"`);
+            } catch (e) {
+              console.error(e);
+            }
           }}
         />
-      </Block>
-
-      <Block>
-        <Input
-          value={localFilePathForWrite}
-          onChangeText={setLocalFilePathForWrite}
-          placeholder={'local file path'}
-        />
-        <Input
-          value={localFileContentForWrite}
-          onChangeText={setLocalFileContentForWrite}
-          placeholder={'file content to write'}
-        />
         <Button
-          title={'write to local file'}
-          onPress={() => {
-            RNFS.writeFile(
-              localFilePathForWrite,
-              localFileContentForWrite,
-              'utf8',
-            )
-              .then(_success => {
-                console.log('file written to local');
-              })
-              .catch(err => {
-                console.error('file write to local error:', err.message);
-              });
+          title={'file exists'}
+          onPress={async () => {
+            try {
+              const val = await CloudStore.exist(fileForReadOnly);
+              console.log(`file "${fileForReadOnly}" exists:`, val);
+            } catch (e) {
+              console.error(e);
+            }
           }}
         />
-      </Block>
+      </View>
+    </Block>
+  );
+};
+const Demo7 = () => {
+  const [fileForDownload, setFileForDownload] = useState(
+    PathUtils.join(defaultICloudContainerPath, 'Documents/file-on-cloud.txt'),
+  );
+  const [fileForStore, setFileForStore] = useState(
+    RNFS.DocumentDirectoryPath + '/',
+  );
 
-      <Block>
+  return (
+    <Block  label={'demo7'}>
+      <Input
+        value={fileForDownload}
+        onChangeText={setFileForDownload}
+        placeholder={'file path'}
+      />
+      <Button
+        title={'download'}
+        onPress={async () => {
+          try {
+            await CloudStore.download(fileForDownload, {
+              onProgress({progress}) {
+                console.log('progress:', progress);
+              },
+            });
+            console.log('download called');
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
+      <Button
+        title={'download multiple files'}
+        onPress={async () => {
+          try {
+            await CloudStore.download(
+              PathUtils.join(
+                defaultICloudContainerPath,
+                'Documents/.f1.txt.icloud',
+              ),
+              {
+                onProgress({progress}) {
+                  console.log('f1:', progress);
+                },
+              },
+            );
+            await CloudStore.download(
+              PathUtils.join(
+                defaultICloudContainerPath,
+                'Documents/.f2.txt.icloud',
+              ),
+              {
+                onProgress({progress}) {
+                  console.log('f2:', progress);
+                },
+              },
+            );
+            await CloudStore.download(
+              PathUtils.join(
+                defaultICloudContainerPath,
+                'Documents/.f3.txt.icloud',
+              ),
+              {
+                onProgress({progress}) {
+                  console.log('f3:', progress);
+                },
+              },
+            );
+
+            console.log('download called');
+          } catch (e) {
+            console.error('download error:', e);
+          }
+        }}
+      />
+
+      <Input
+        value={fileForStore}
+        onChangeText={setFileForStore}
+        placeholder={'local file path'}
+      />
+      <Button
+        title={'copy downloaded file to local'}
+        onPress={async () => {
+          try {
+            await RNFS.copyFile(fileForDownload, fileForStore);
+            console.log('coped from icloud to local');
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </Block>
+  );
+};
+const Demo10 = () => {
+  const [fileForUpload, setFileForUpload] = useState(
+    RNFS.DocumentDirectoryPath + '/local-file.txt',
+  );
+  const [fileUploadedTo, setFileUploadedTo] = useState(
+    CloudStore.defaultICloudContainerPath +
+      '/Documents/file-uploaded-from-local.txt',
+  );
+
+  return (
+    <>
+      <Block  label={'demo10'}>
         <Input
           value={fileForUpload}
           onChangeText={setFileForUpload}
@@ -445,27 +489,7 @@ const IOSICloudScreen: FC<Props> = ({}) => {
           }}
         />
       </Block>
-
-      <Block>
-        <Input
-          value={localFilePathForDelete}
-          onChangeText={setlLocalFilePathForDelete}
-          placeholder={'file path'}
-        />
-        <Button
-          title={'delete local file'}
-          onPress={() => {
-            RNFS.unlink(localFilePathForDelete)
-              .then(() => {
-                console.log('deleted');
-              })
-              .catch(err => {
-                console.error('delete error:', err.message);
-              });
-          }}
-        />
-      </Block>
-    </KeyboardAwareScrollView>
+    </>
   );
 };
 

@@ -168,16 +168,18 @@ export async function download(
 ): Promise<void> {
   downloadId++
 
-  const fileInfo = await CloudStore.stat(path);
-  if (
-    fileInfo.downloadStatus ===
-    "NSURLUbiquitousItemDownloadingStatusCurrent"
-  ) {
-    options?.onProgress({progress: 100})
-    return Promise.resolve()
-  }
-
   const pathWithoutDot = PathUtils.iCloudRemoveDotExt(path);
+
+  if (await exist(pathWithoutDot)) {
+    const fileInfo = await stat(pathWithoutDot);
+    if (
+      fileInfo.downloadStatus ===
+      "NSURLUbiquitousItemDownloadingStatusCurrent"
+    ) {
+      options?.onProgress({progress: 100})
+      return Promise.resolve()
+    }
+  }
 
   if(options?.onProgress) {
     if(!calledGlobalDownloadEvent) {
@@ -188,8 +190,10 @@ export async function download(
       callback: options.onProgress
     }
   }
-  return CloudStore.download(pathWithoutDot, {
-    id: downloadId.toString()
+
+  return CloudStore.download(path, {
+    id: downloadId.toString(),
+    pathWithoutDot
   });
 }
 

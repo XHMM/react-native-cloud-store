@@ -490,7 +490,9 @@ extension CloudStoreModule {
         let query = NSMetadataQuery()
         query.operationQueue = .main
         query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope, NSMetadataQueryUbiquitousDataScope]
-        query.predicate = NSPredicate(format: "%K CONTAINS %@", NSMetadataItemPathKey,url.path)
+        // use `==` but not `CONTAINS` to fix files with same prefix
+        query.predicate = NSPredicate(format: "%K == %@", NSMetadataItemPathKey,url.path)
+        // query.predicate = NSPredicate(format: "TRUEPREDICATE", NSMetadataItemPathKey,url.path)
         query.notificationBatchingInterval = 0.2
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query, queue: query.operationQueue, using: { [self] notification in
@@ -556,7 +558,7 @@ extension CloudStoreModule {
     private func listenUpload(iCloudURL: URL,id: String, resolver: @escaping RCTPromiseResolveBlock) {
         initAndStartQuery(iCloudURL: iCloudURL,id: id, resolver: resolver) { (query) in
             query.disableUpdates()
-            
+
             var arr: [ICloudGatheringFile] = []
             var ended = false
             for item in query.results {
@@ -572,7 +574,7 @@ extension CloudStoreModule {
                 }
                 print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
             }
-            
+
             let m: NSMutableArray = NSMutableArray()
             m.addObjects(from: arr.map{$0.nsDictionary})
             if !ended {
@@ -581,7 +583,7 @@ extension CloudStoreModule {
             return (m, ended)
         }
     }
-    
+
     private func listenDownload(iCloudURL: URL,id: String, resolver: @escaping RCTPromiseResolveBlock) {
         initAndStartQuery(iCloudURL: iCloudURL,id:id, resolver: resolver) { query in
             query.disableUpdates()
@@ -590,32 +592,32 @@ extension CloudStoreModule {
             for item in query.results {
                 let item = item as! NSMetadataItem
                 let fileItemURL = item.value(forAttribute: NSMetadataItemURLKey) as! URL
-                
+
                 let values = try? fileItemURL.resourceValues(forKeys: [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey, .ubiquitousItemIsDownloadingKey])
                 let isDir = values?.isDirectory
                 let downloadingStatus = values?.ubiquitousItemDownloadingStatus
                 let downloading = values?.ubiquitousItemIsDownloading
                 let downloadingProgress = item.value(forAttribute: NSMetadataUbiquitousItemPercentDownloadedKey) as? Float
-                
+
                 arr.append(ICloudGatheringFile(type: .download, path: fileItemURL.path, progress: downloadingProgress, isDir: isDir))
-                
+
                 // stop query when one file progress is 100
                 if downloading == false && downloadingProgress == 100 {
                     ended = true
                 }
                 Logger.log("download-info:\n","url-\(fileItemURL)\nisDownloading-\(String(describing: downloading))\nstatus-\(String(describing: downloadingStatus))\nprogress-\(String(describing: downloadingProgress))\n")
             }
-            
+
             if !ended {
                 query.enableUpdates()
             }
-            
+
             let m: NSMutableArray = NSMutableArray()
             m.addObjects(from: arr.map{$0.nsDictionary})
             return (m,ended)
         }
     }
-    
+
     @objc
     func upload(_ localPath: String, to path: String, with options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
@@ -641,8 +643,17 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         let id = (options["id"] as! String)
-        let iCloudURL = URL(fileURLWithPath: path)
+        let pathWithoutDot = (options["pathWithoutDot"] as! String)
 
+        let originalICloudURL = URL(fileURLWithPath: path)
+
+        let exists = FileManager.default.fileExists(atPath: originalICloudURL.path);
+        if !exists {
+            reject("ERR_NOT_EXIST", "file/folder of \(originalICloudURL.path) not exists", NSError(domain: "", code: 0));
+            return;
+        }
+
+        let iCloudURL = URL(fileURLWithPath: pathWithoutDot)
         do {
             try FileManager.default.evictUbiquitousItem(at: iCloudURL)
             // TODO: if url is a directory, this only download dir itself but not include files under it, you need to recurisvely download files of folder, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
