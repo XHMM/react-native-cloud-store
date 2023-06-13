@@ -181,6 +181,7 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         let override: Bool = (options["override"] as? Bool) ?? false
+        let isBase64Encoded: Bool = (options["isBase64Encoded"] as? Bool) ?? false
         let fileURL = URL(fileURLWithPath: path)
         let id = (options["id"] as? String)
 
@@ -196,8 +197,9 @@ extension CloudStoreModule {
             return
         }
 
+        let data = isBase64Encoded ? Data(base64Encoded: content, options: [.ignoreUnknownCharacters]) : content.data(using: .utf8)
         do {
-            try content.data(using: .utf8)?.write(to: fileURL, options: .atomic)
+            try data?.write(to: fileURL, options: .atomic)
             if let id = id {
                 listenUpload(iCloudURL: fileURL, id: id, resolver: resolve)
             } else {
