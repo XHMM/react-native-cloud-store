@@ -143,15 +143,16 @@ extension CloudStoreModule {
 
     @objc
     func onICloudIdentityDidChange(notification:Notification) {
+        let newToken = FileManager.default.ubiquityIdentityToken
+        var tokenChanged = false
+        if let newToken = newToken {
+            tokenChanged = !newToken.isEqual(icloudCurrentToken)
+        } else {
+            tokenChanged = icloudCurrentToken != nil
+        }
+        icloudCurrentToken = newToken;
+      
         if hasListeners {
-            let newToken = FileManager.default.ubiquityIdentityToken
-            var tokenChanged = false
-            if let newToken = newToken {
-                tokenChanged = !newToken.isEqual(icloudCurrentToken)
-            } else {
-                tokenChanged = icloudCurrentToken != nil
-            }
-
             sendEvent(withName: "onICloudIdentityDidChange", body: [
                 "tokenChanged":  tokenChanged
             ])
