@@ -637,23 +637,15 @@ extension CloudStoreModule {
         listenUpload(iCloudURL: iCloudURL,id: id, resolver: resolve)
     }
 
+    // here path supports both `.xx.icloud` and `xx` format, we don't need to transform it
     @objc
     func download(_ path: String, with options: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock,
                   rejecter reject: RCTPromiseRejectBlock) {
         if(icloudInvalid(then: reject)) {return}
 
         let id = (options["id"] as! String)
-        let pathWithoutDot = (options["pathWithoutDot"] as! String)
+        let iCloudURL = URL(fileURLWithPath: path);
 
-        let originalICloudURL = URL(fileURLWithPath: path)
-
-        let exists = FileManager.default.fileExists(atPath: originalICloudURL.path);
-        if !exists {
-            reject("ERR_NOT_EXIST", "file/folder of \(originalICloudURL.path) not exists", NSError(domain: "", code: 0));
-            return;
-        }
-
-        let iCloudURL = URL(fileURLWithPath: pathWithoutDot)
         do {
             try FileManager.default.evictUbiquitousItem(at: iCloudURL)
             // TODO: if url is a directory, this only download dir itself but not include files under it, you need to recurisvely download files of folder, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
