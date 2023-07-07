@@ -1,3 +1,7 @@
+## 0.10.3
+- fix: `download` not work correctly
+- fix: when `upload`/`download` progress hang if the same prefix file path existed
+
 ## 0.10.2
 - fix: event not be removed correctly
 
