@@ -129,6 +129,8 @@ extension CloudStoreModule {
     @objc
     func getICloudURL(_ containerIdentifier: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
                       rejecter reject: @escaping RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
         DispatchQueue.global(qos: .userInitiated).async {
             // As doc https://developer.apple.com/documentation/foundation/filemanager/1411653-url said: Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of time to set up iCloud and return the requested URL
             let url = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier)
@@ -151,7 +153,7 @@ extension CloudStoreModule {
             tokenChanged = icloudCurrentToken != nil
         }
         icloudCurrentToken = newToken;
-      
+
         if hasListeners {
             sendEvent(withName: "onICloudIdentityDidChange", body: [
                 "tokenChanged":  tokenChanged
@@ -645,7 +647,8 @@ extension CloudStoreModule {
         if(icloudInvalid(then: reject)) {return}
 
         let id = (options["id"] as! String)
-        let iCloudURL = URL(fileURLWithPath: path);
+        let pathWithoutDot = (options["pathWithoutDot"] as! String)
+        let iCloudURL = URL(fileURLWithPath: pathWithoutDot);
 
         do {
             try FileManager.default.evictUbiquitousItem(at: iCloudURL)

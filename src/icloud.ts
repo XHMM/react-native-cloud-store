@@ -161,6 +161,9 @@ export async function upload(
 }
 
 export async function download(
+  /**
+   * Support path with or without .icloud
+   */
   path: string,
   options?: {
     onProgress: (data: {progress: number;}) => void
@@ -169,17 +172,6 @@ export async function download(
   downloadId++
 
   const pathWithoutDot = PathUtils.iCloudRemoveDotExt(path);
-
-  if (await exist(pathWithoutDot)) {
-    const fileInfo = await stat(pathWithoutDot);
-    if (
-      fileInfo.downloadStatus ===
-      "NSURLUbiquitousItemDownloadingStatusCurrent"
-    ) {
-      options?.onProgress({progress: 100})
-      return Promise.resolve()
-    }
-  }
 
   if(options?.onProgress) {
     if(!calledGlobalDownloadEvent) {
@@ -236,7 +228,8 @@ export function registerGlobalDownloadEvent() {
   }
 
   calledGlobalDownloadEvent = true
-  const subscription = onICloudDocumentsUpdateGathering((data) => {
+
+  function onGatheringCallback(data: DocumentsGatheringData) {
     const callbackData = downloadId2CallbackDataMap[data.id]
     if(!callbackData) return
     const {path, callback} = callbackData
@@ -253,13 +246,16 @@ export function registerGlobalDownloadEvent() {
       }
       callback({progress: progress})
     }
-  })
-  calledGlobalDownloadEvent = true
+  }
+
+  const gatheringUpdateListener = onICloudDocumentsUpdateGathering(onGatheringCallback)
+  const gatheringFinishListener = onICloudDocumentsFinishGathering(onGatheringCallback)
 
   // TODO: directly return the unsubscribe function in next version
   return {
     remove() {
-      subscription.remove();
+      gatheringUpdateListener.remove();
+      gatheringFinishListener.remove();
       calledGlobalDownloadEvent = false
     }
   }
