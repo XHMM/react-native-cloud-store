@@ -77,6 +77,8 @@ function readFile(
 ```
 
 ### `readDir`
+If the format of returned filename is like `.[filename].icloud`, it means the file is not downloaded.
+
 ```ts
 function readDir(
   icloudPath: string
@@ -131,18 +133,14 @@ function stat(
 ): Promise<{
   isInICloud?: boolean;
   containerDisplayName?: string;
-
   isDownloading?: boolean;
   hasCalledDownload?: boolean;
-  downloadStatus?: string;
+  downloadStatus?: DownloadStatus;
   downloadError?: string;
-
   isUploaded?: boolean;
   isUploading?: boolean;
   uploadError?: string;
-
   hasUnresolvedConflicts?: boolean;
-
   modifyTimestamp?: number;
   createTimestamp?: number;
   name?: string;
@@ -196,9 +194,9 @@ function upload(
 
 
 ### `download`
-Download icloud file to local device, you can only move/copy file after downloading it
+Download icloud file to local device. You can only move/copy the file after downloading it
 :::info
-This function will be resolved immediately, if your want to wait until uploaded, you can wrap it with Promise yourself
+This function will be resolved immediately, if your want to wait until downloaded, you can wrap it with Promise yourself
 :::
 
 ```ts
@@ -209,6 +207,8 @@ function download(
   }
 ): Promise<void>
 ```
+The format of `icloudPath` can be either `xx` or `.xx.icloud`, so you don't need to transform it manually.
+
 
 ## Events
 
