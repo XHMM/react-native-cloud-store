@@ -1,3 +1,6 @@
+## 0.10.4
+- fix: `download` progress not reach to 100 to resolve
+
 ## 0.10.3
 - fix: `download` not work correctly
 - fix: when `upload`/`download` progress hang if the same prefix file path existed
