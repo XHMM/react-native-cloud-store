@@ -220,7 +220,7 @@ This event only be called at the first search phase
 This event only be called at the first search phase
 ### `onICloudDocumentsUpdateGathering`
 :::info
-`download` and `uplaod` have supported `onProgress`, so this event is not needed if you don't have special needs
+`download` and `upload` have supported `onProgress`, so this event is not needed if you don't have special needs
 :::
 Use this event to listen upcoming upload/download progress
 
