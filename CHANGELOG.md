@@ -1,3 +1,6 @@
+## 0.10.5
+- fix: `DownloadStatus` enum value mis-writing
+
 ## 0.10.4
 - fix: `download` progress not reach to 100 to resolve
 
