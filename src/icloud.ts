@@ -103,15 +103,15 @@ export enum DownloadStatus {
   /**
    * A local copy of this item exists and is the most up-to-date version known to the device.
    */
-  current = 'NSURLUbiquitousItemDownloadingStatusNotDownloaded',
+  current = 'NSURLUbiquitousItemDownloadingStatusCurrent',
   /**
    * A local copy of this item exists, but it is stale. The most recent version will be downloaded as soon as possible.
    */
-  downloaded = 'NSURLUbiquitousItemDownloadingStatusCurrent',
+  downloaded = 'NSURLUbiquitousItemDownloadingStatusDownloaded',
   /**
    * This item has not been downloaded yet.
    */
-  notDownloaded = 'NSURLUbiquitousItemDownloadingStatusDownloaded',
+  notDownloaded = 'NSURLUbiquitousItemDownloadingStatusNotDownloaded',
 }
 
 export interface ICloudStat {
