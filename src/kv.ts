@@ -20,7 +20,9 @@ export async function kvGetAllItems(): Promise<Record<string, string>> {
   return CloudStore.kvGetAllItems();
 }
 
-// doc: https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1433687-change_reason_values
+/**
+ * https://developer.apple.com/documentation/foundation/nsubiquitouskeyvaluestore/1433687-change_reason_values
+ */
 export enum KVStoreChangedReason {
   NSUbiquitousKeyValueStoreServerChange,
   NSUbiquitousKeyValueStoreInitialSyncChange,

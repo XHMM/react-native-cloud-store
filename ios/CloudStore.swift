@@ -129,6 +129,8 @@ extension CloudStoreModule {
     @objc
     func getICloudURL(_ containerIdentifier: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
                       rejecter reject: @escaping RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
         DispatchQueue.global(qos: .userInitiated).async {
             // As doc https://developer.apple.com/documentation/foundation/filemanager/1411653-url said: Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of time to set up iCloud and return the requested URL
             let url = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier)
@@ -143,15 +145,16 @@ extension CloudStoreModule {
 
     @objc
     func onICloudIdentityDidChange(notification:Notification) {
-        if hasListeners {
-            let newToken = FileManager.default.ubiquityIdentityToken
-            var tokenChanged = false
-            if let newToken = newToken {
-                tokenChanged = !newToken.isEqual(icloudCurrentToken)
-            } else {
-                tokenChanged = icloudCurrentToken != nil
-            }
+        let newToken = FileManager.default.ubiquityIdentityToken
+        var tokenChanged = false
+        if let newToken = newToken {
+            tokenChanged = !newToken.isEqual(icloudCurrentToken)
+        } else {
+            tokenChanged = icloudCurrentToken != nil
+        }
+        icloudCurrentToken = newToken;
 
+        if hasListeners {
             sendEvent(withName: "onICloudIdentityDidChange", body: [
                 "tokenChanged":  tokenChanged
             ])
@@ -409,18 +412,14 @@ extension CloudStoreModule {
             let resources = try url.resourceValues(forKeys: [
                 .isUbiquitousItemKey,
                 .ubiquitousItemContainerDisplayNameKey,
-
                 .ubiquitousItemDownloadRequestedKey,
                 .ubiquitousItemIsDownloadingKey,
                 .ubiquitousItemDownloadingStatusKey,
                 .ubiquitousItemDownloadingErrorKey,
-
                 .ubiquitousItemIsUploadedKey,
                 .ubiquitousItemIsUploadingKey,
                 .ubiquitousItemUploadingErrorKey,
-
                 .ubiquitousItemHasUnresolvedConflictsKey,
-
                 .contentModificationDateKey,
                 .creationDateKey,
                 .nameKey,
@@ -432,17 +431,14 @@ extension CloudStoreModule {
 
             dict["isInICloud"] = resources.isUbiquitousItem
             dict["containerDisplayName"] = resources.ubiquitousItemContainerDisplayName
-
             dict["isDownloading"] = resources.ubiquitousItemIsDownloading
             // TODO: curious why this is always `false` for calling `download` for a folder, maybe due to files under the folder was not downloaded entirely? have a test when your're free.
             dict["hasCalledDownload"] = resources.ubiquitousItemDownloadRequested
             dict["downloadStatus"] = resources.ubiquitousItemDownloadingStatus
             dict["downloadError"] = resources.ubiquitousItemDownloadingError?.localizedDescription
-
             dict["isUploaded"] = resources.ubiquitousItemIsUploaded
             dict["isUploading"] = resources.ubiquitousItemIsUploading
             dict["uploadError"] = resources.ubiquitousItemUploadingError?.localizedDescription
-
             dict["hasUnresolvedConflicts"] = resources.ubiquitousItemHasUnresolvedConflicts
 
             if let modifyDate = resources.contentModificationDate {
@@ -492,7 +488,7 @@ extension CloudStoreModule {
         let query = NSMetadataQuery()
         query.operationQueue = .main
         query.searchScopes = [NSMetadataQueryUbiquitousDocumentsScope, NSMetadataQueryUbiquitousDataScope]
-        // use `==` but not `CONTAINS` to fix files with same prefix
+        // We need use `==` here but not `CONTAINS` to fix files with same prefix
         query.predicate = NSPredicate(format: "%K == %@", NSMetadataItemPathKey,url.path)
         // query.predicate = NSPredicate(format: "TRUEPREDICATE", NSMetadataItemPathKey,url.path)
         query.notificationBatchingInterval = 0.2
@@ -646,19 +642,11 @@ extension CloudStoreModule {
 
         let id = (options["id"] as! String)
         let pathWithoutDot = (options["pathWithoutDot"] as! String)
+        let iCloudURL = URL(fileURLWithPath: pathWithoutDot);
 
-        let originalICloudURL = URL(fileURLWithPath: path)
-
-        let exists = FileManager.default.fileExists(atPath: originalICloudURL.path);
-        if !exists {
-            reject("ERR_NOT_EXIST", "file/folder of \(originalICloudURL.path) not exists", NSError(domain: "", code: 0));
-            return;
-        }
-
-        let iCloudURL = URL(fileURLWithPath: pathWithoutDot)
         do {
             try FileManager.default.evictUbiquitousItem(at: iCloudURL)
-            // TODO: if url is a directory, this only download dir itself but not include files under it, you need to recurisvely download files of folder, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
+            // if the url is a directory, this only download the dir itself but not the files under it, you need to recurisvely download files of folders, check https://github.com/farnots/iCloudDownloader/blob/master/iCloudDownlader/Downloader.swift for inspiration
             try FileManager.default.startDownloadingUbiquitousItem(at: iCloudURL)
         } catch {
             reject("ERR_DOWNLOAD_ICLOUD_FILE", error.localizedDescription, NSError(

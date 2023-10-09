@@ -11,3 +11,6 @@ sidebar_position: 4
 
 ## What is `.xxx.icloud` file?
 When reading iCloud dir, you would find files named like `.xxx.icloud`, this format means the file has not downloaded to your local device, it's currently stored on iCloud drive. You can call `download` to download it, after downloaded, re-call `readDir` and you will find `.xxx.icloud` become into `xxx`, then you can use such as `react-native-fs` to copy it from iCloud container to your app's documents folder.
+
+## Backup progress hangs and cannot reach to 100%
+You should test the icloud backup on the physical device, simulator environment is not reliable.

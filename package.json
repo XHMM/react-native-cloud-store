@@ -1,6 +1,6 @@
 {
   "name": "react-native-cloud-store",
-  "version": "0.10.3-alpha.1",
+  "version": "0.10.5",
   "description": "A react-native module for cloud operation",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

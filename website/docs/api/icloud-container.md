@@ -204,6 +204,7 @@ This function will be resolved immediately, if your want to wait until uploaded,
 
 ```ts
 function download(
+  // supports both `.xx.icloud` and `xx`
   icloudPath: string,
   options?: {
     onProgress?: (data: {progress: number}) => void
