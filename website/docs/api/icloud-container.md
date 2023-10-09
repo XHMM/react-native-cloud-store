@@ -64,6 +64,7 @@ function writeFile(
   content: string,
   options: {
     override?: boolean
+    isBase64Encoded?: boolean
     onProgress?: (data: {progress: number}) => void
   }
 ): Promise<void>
