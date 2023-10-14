@@ -30,6 +30,15 @@ export enum KVStoreChangedReason {
   NSUbiquitousKeyValueStoreAccountChange,
 }
 
+// TODO: 1. Change native function to sync  2. update example to test  3. update doc 4. publish
+export function registerGlobalKVEvent() {
+  CloudStore.listenKvDidChangeExternallyNotification();
+
+  return () => {
+    CloudStore.unlistenKvDidChangeExternallyNotification();
+  };
+}
+
 interface KVStoreChangedData {
   reason: KVStoreChangedReason;
   changedKeys?: string[];

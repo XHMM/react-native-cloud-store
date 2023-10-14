@@ -19,19 +19,11 @@ extension FileManager {
 class CloudStoreModule : RCTEventEmitter {
     private var hasListeners = false
     private var icloudCurrentToken = FileManager.default.ubiquityIdentityToken
+    private var kvDidChangeExternallyNotificationObserver: NSObjectProtocol?
+    private var icloudNSUbiquityIdentityDidChangeObserver: NSObjectProtocol?
 
     override init() {
         super.init()
-
-        // kv event
-        NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default, queue: nil) { [self] u in
-            onICloudKVStoreRemoteChanged(notification: u)
-        }
-
-        // icloud event
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSUbiquityIdentityDidChange, object: nil, queue: nil) { [self] u in
-            onICloudIdentityDidChange(notification: u)
-        }
     }
 
     override func supportedEvents() -> [String]! {
@@ -75,6 +67,25 @@ extension CloudStoreModule {
     }
 
     @objc
+    func listenKvDidChangeExternallyNotification(_ resolve: RCTPromiseResolveBlock,
+                                                 rejecter reject: RCTPromiseRejectBlock) {
+        kvDidChangeExternallyNotificationObserver = NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default, queue: nil) { [self] u in
+            onICloudKVStoreRemoteChanged(notification: u)
+        }
+        resolve(nil)
+    }
+
+    @objc
+    func unlistenKvDidChangeExternallyNotification(_ resolve: RCTPromiseResolveBlock,
+                                                   rejecter reject: RCTPromiseRejectBlock) {
+        if let observer = kvDidChangeExternallyNotificationObserver {
+            NotificationCenter.default.removeObserver(kvDidChangeExternallyNotificationObserver as Any)
+        }
+        resolve(nil)
+    }
+
+
+    @objc
     func kvSync(_ resolve: RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
 
@@ -114,7 +125,7 @@ extension CloudStoreModule {
     }
 }
 
-// MARK: icloud helpers
+// MARK: icloud chores
 extension CloudStoreModule {
     // make sure iCloud available before doing extra things
     private func icloudInvalid(then reject: RCTPromiseRejectBlock) -> Bool  {
@@ -141,6 +152,24 @@ extension CloudStoreModule {
             }
 
         }
+    }
+
+    @objc
+    func listenICloudNSUbiquityIdentityDidChange(_ resolve: RCTPromiseResolveBlock,
+                                                 rejecter reject: RCTPromiseRejectBlock) {
+        icloudNSUbiquityIdentityDidChangeObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.NSUbiquityIdentityDidChange, object: nil, queue: nil) { [self] u in
+            onICloudIdentityDidChange(notification: u)
+        }
+        resolve(nil)
+    }
+
+    @objc
+    func unlistenICloudNSUbiquityIdentityDidChange(_ resolve: RCTPromiseResolveBlock,
+                                                   rejecter reject: RCTPromiseRejectBlock) {
+        if let observer = icloudNSUbiquityIdentityDidChangeObserver {
+            NotificationCenter.default.removeObserver(icloudNSUbiquityIdentityDidChangeObserver as Any)
+        }
+        resolve(nil)
     }
 
     @objc

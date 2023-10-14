@@ -347,3 +347,12 @@ function u(path: string): string {
   }
   return path;
 }
+
+// TODO: Change native function to sync
+export function registerGlobalICloudNSUbiquityIdentityDidChangeEvent() {
+  CloudStore.listenICloudNSUbiquityIdentityDidChange();
+
+  return () => {
+    CloudStore.unlistenICloudNSUbiquityIdentityDidChange();
+  };
+}
