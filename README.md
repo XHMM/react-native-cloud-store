@@ -1,5 +1,7 @@
 # React-Native-Cloud-Store
 
+[![Version npm](https://img.shields.io/npm/v/react-native-cloud-store.svg?logo=npm)](https://www.npmjs.com/package/react-native-cloud-store)
+
 A react-native module for cloud operations (currently only support iCloud drive)
 
 ## Get Started
