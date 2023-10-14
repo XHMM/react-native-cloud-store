@@ -493,8 +493,12 @@ extension CloudStoreModule {
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query, queue: query.operationQueue, using: { [self] notification in
             Logger.log("start results:\n")
-
-            let (res, _) = queryCallback(query)
+            let (res, ended) = queryCallback(query)
+            if ended {
+                Logger.log("query stopped on start-phase")
+                query.stop()
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidStartGathering, object: query)
+            }
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsStartGathering", body: NSDictionary(dictionary: [
                     "id": id,
@@ -506,8 +510,12 @@ extension CloudStoreModule {
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query,  queue: query.operationQueue, using: { [self] notification in
             Logger.log("gather results:\n")
-            let (res, _) = queryCallback(query)
-
+            let (res, ended) = queryCallback(query)
+            if ended {
+                Logger.log("query stopped on gather-phase")
+                query.stop()
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryGatheringProgress, object: query)
+            }
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsGathering", body: NSDictionary(dictionary: [
                     "id": id,
@@ -519,7 +527,12 @@ extension CloudStoreModule {
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query,  queue: query.operationQueue, using: { [self] notification in
             Logger.log("finish results:\n")
-            let (res, _) = queryCallback(query)
+            let (res, ended) = queryCallback(query)
+            if ended {
+                Logger.log("query stopped on finish-phase")
+                query.stop()
+                NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidFinishGathering, object: query)
+            }
             if hasListeners {
                 sendEvent(withName: "onICloudDocumentsFinishGathering", body: NSDictionary(dictionary: [
                     "id": id,
@@ -534,7 +547,7 @@ extension CloudStoreModule {
             Logger.log("update results:\n")
             let (res, ended) = queryCallback(query)
             if ended {
-                Logger.log("download query stopped")
+                Logger.log("query stopped on update-phase")
                 query.stop()
                 NotificationCenter.default.removeObserver(self, name: NSNotification.Name.NSMetadataQueryDidUpdate, object: query)
             }
@@ -568,7 +581,7 @@ extension CloudStoreModule {
                 if isUploading == false && uploadProgress == 100 {
                     ended = true
                 }
-                print(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
+                Logger.log(fileItemURL," upload info: uploadProgress-\(String(describing: uploadProgress))")
             }
 
             let m: NSMutableArray = NSMutableArray()

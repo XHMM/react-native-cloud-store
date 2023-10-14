@@ -211,13 +211,14 @@ export async function download(
   });
 }
 
+// TODO: upload and download logic need to be refactored to be more flexible
 export function registerGlobalUploadEvent() {
   if (calledGlobalUploadEvent) {
     return;
   }
   calledGlobalUploadEvent = true;
 
-  const subscription = onICloudDocumentsUpdateGathering((data) => {
+  function onGatheringCallback(data: DocumentsGatheringData) {
     const callbackData = uploadId2CallbackDataMap[data.id];
     if (!callbackData) return;
     const { path, callback } = callbackData;
@@ -231,12 +232,20 @@ export function registerGlobalUploadEvent() {
       }
       callback({ progress: progress });
     }
-  });
+  }
+
+  const gatheringListener = onICloudDocumentsGathering(onGatheringCallback);
+  const gatheringUpdateListener =
+    onICloudDocumentsUpdateGathering(onGatheringCallback);
+  const gatheringFinishListener =
+    onICloudDocumentsFinishGathering(onGatheringCallback);
 
   // TODO: directly return the unsubscribe function in next version
   return {
     remove() {
-      subscription.remove();
+      gatheringListener.remove();
+      gatheringUpdateListener.remove();
+      gatheringFinishListener.remove();
       calledGlobalUploadEvent = false;
     },
   };
@@ -265,6 +274,7 @@ export function registerGlobalDownloadEvent() {
     }
   }
 
+  const gatheringListener = onICloudDocumentsGathering(onGatheringCallback);
   const gatheringUpdateListener =
     onICloudDocumentsUpdateGathering(onGatheringCallback);
   const gatheringFinishListener =
@@ -273,6 +283,7 @@ export function registerGlobalDownloadEvent() {
   // TODO: directly return the unsubscribe function in next version
   return {
     remove() {
+      gatheringListener.remove();
       gatheringUpdateListener.remove();
       gatheringFinishListener.remove();
       calledGlobalDownloadEvent = false;
