@@ -1,0 +1,11 @@
+---
+title: Migrating from 0.10 to 0.11
+sidebar_position: 100
+---
+
+## iCloud container
+- If you are listening `onICloudIdentityDidChange`, you need to manually call the corresponding event register `registerICloudIdentityDidChangeEvent` at the beginning of your application code
+
+## Key-value storage
+- `onICloudKVStoreRemoteChanged` was renamed to `onKVStoreRemoteChanged`
+- If you are listening `onKVStoreRemoteChanged`, you need to manually call the corresponding event register `registerKVStoreRemoteChangedEvent` at the beginning of your application code
