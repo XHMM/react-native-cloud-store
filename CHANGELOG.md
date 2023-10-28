@@ -1,3 +1,10 @@
+## 0.11.0
+- refactor: this module doesn't listen events when initiated anymore, you need to call event registers manually.
+- feat: expose `evictUbiquitousItem`
+- feat: expose `startDownloadingUbiquitousItem`
+- feat: expose `setUbiquitous`
+- feat: expose `getUrlForPublishingUbiquitousItem`
+
 ## 0.10.6
 - fix: `upload` progress not reach to 100 to resolve
 

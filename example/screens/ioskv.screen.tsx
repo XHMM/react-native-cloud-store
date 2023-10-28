@@ -15,8 +15,15 @@ const IOSKVScreen: FC<Props> = ({}) => {
   const [keyForDelete, setKeyForDelete] = useState('');
 
   useEffect(() => {
-    const r1 = CloudStore.onICloudKVStoreRemoteChange(u => {
-      console.log(`onICloudKVStoreRemoteChange:`, u);
+    const register = CloudStore.registerKVStoreRemoteChangedEvent();
+    return () => {
+      register.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const r1 = CloudStore.onKVStoreRemoteChanged(u => {
+      console.log(`onKVStoreRemoteChanged:`, u);
     });
     return () => {
       r1.remove();
@@ -44,7 +51,11 @@ const IOSKVScreen: FC<Props> = ({}) => {
       </Block>
 
       <Block>
-        <Input value={keyForSet} onChangeText={setKeyForSet} placeholder={'key'} />
+        <Input
+          value={keyForSet}
+          onChangeText={setKeyForSet}
+          placeholder={'key'}
+        />
         <Input
           value={valueForSet}
           onChangeText={setValueForSet}
@@ -65,7 +76,11 @@ const IOSKVScreen: FC<Props> = ({}) => {
       </Block>
 
       <Block>
-        <Input value={keyForGet} onChangeText={setKeyForGet} placeholder={'key'} />
+        <Input
+          value={keyForGet}
+          onChangeText={setKeyForGet}
+          placeholder={'key'}
+        />
         <Button
           title={'get'}
           onPress={async () => {
@@ -80,7 +95,11 @@ const IOSKVScreen: FC<Props> = ({}) => {
       </Block>
 
       <Block>
-        <Input value={keyForDelete} onChangeText={setKeyForDelete} placeholder={'key for delete'} />
+        <Input
+          value={keyForDelete}
+          onChangeText={setKeyForDelete}
+          placeholder={'key for delete'}
+        />
         <Button
           title={'remove'}
           onPress={async () => {

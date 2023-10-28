@@ -19,24 +19,16 @@ extension FileManager {
 class CloudStoreModule : RCTEventEmitter {
     private var hasListeners = false
     private var icloudCurrentToken = FileManager.default.ubiquityIdentityToken
+    private var kvDidChangeExternallyNotificationObserver: NSObjectProtocol?
+    private var icloudNSUbiquityIdentityDidChangeObserver: NSObjectProtocol?
 
     override init() {
         super.init()
-
-        // kv event
-        NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default, queue: nil) { [self] u in
-            onICloudKVStoreRemoteChanged(notification: u)
-        }
-
-        // icloud event
-        NotificationCenter.default.addObserver(forName: NSNotification.Name.NSUbiquityIdentityDidChange, object: nil, queue: nil) { [self] u in
-            onICloudIdentityDidChange(notification: u)
-        }
     }
 
     override func supportedEvents() -> [String]! {
         return [
-            "onICloudKVStoreRemoteChanged",
+            "onKVStoreRemoteChanged",
             "onICloudIdentityDidChange",
             "onICloudDocumentsStartGathering",
             "onICloudDocumentsGathering",
@@ -68,11 +60,30 @@ class CloudStoreModule : RCTEventEmitter {
 // MARK: kv
 extension CloudStoreModule {
     @objc
-    func onICloudKVStoreRemoteChanged(notification:Notification) {
+    func onKVStoreRemoteChanged(notification:Notification) {
         if hasListeners {
-            sendEvent(withName: "onICloudKVStoreRemoteChanged", body: notification.userInfo)
+            sendEvent(withName: "onKVStoreRemoteChanged", body: notification.userInfo)
         }
     }
+
+    @objc
+    func listenKvDidChangeExternallyNotification(_ resolve: RCTPromiseResolveBlock,
+                                                 rejecter reject: RCTPromiseRejectBlock) {
+        kvDidChangeExternallyNotificationObserver = NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: NSUbiquitousKeyValueStore.default, queue: nil) { [self] u in
+            onKVStoreRemoteChanged(notification: u)
+        }
+        resolve(nil)
+    }
+
+    @objc
+    func unlistenKvDidChangeExternallyNotification(_ resolve: RCTPromiseResolveBlock,
+                                                   rejecter reject: RCTPromiseRejectBlock) {
+        if let observer = kvDidChangeExternallyNotificationObserver {
+            NotificationCenter.default.removeObserver(kvDidChangeExternallyNotificationObserver as Any)
+        }
+        resolve(nil)
+    }
+
 
     @objc
     func kvSync(_ resolve: RCTPromiseResolveBlock,
@@ -114,7 +125,7 @@ extension CloudStoreModule {
     }
 }
 
-// MARK: icloud helpers
+// MARK: icloud chores
 extension CloudStoreModule {
     // make sure iCloud available before doing extra things
     private func icloudInvalid(then reject: RCTPromiseRejectBlock) -> Bool  {
@@ -139,8 +150,25 @@ extension CloudStoreModule {
             } else {
                 reject("ERR_ICLOUD_PATH", "cannot get iCloud path, make sure you passed a right container id and correctly configured entitlements", NSError(domain: "", code: 0))
             }
-
         }
+    }
+
+    @objc
+    func listenICloudNSUbiquityIdentityDidChange(_ resolve: RCTPromiseResolveBlock,
+                                                 rejecter reject: RCTPromiseRejectBlock) {
+        icloudNSUbiquityIdentityDidChangeObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.NSUbiquityIdentityDidChange, object: nil, queue: nil) { [self] u in
+            onICloudIdentityDidChange(notification: u)
+        }
+        resolve(nil)
+    }
+
+    @objc
+    func unlistenICloudNSUbiquityIdentityDidChange(_ resolve: RCTPromiseResolveBlock,
+                                                   rejecter reject: RCTPromiseRejectBlock) {
+        if let observer = icloudNSUbiquityIdentityDidChangeObserver {
+            NotificationCenter.default.removeObserver(icloudNSUbiquityIdentityDidChangeObserver as Any)
+        }
+        resolve(nil)
     }
 
     @objc
@@ -315,14 +343,14 @@ struct ICloudGatheringFile {
 
 // MARK: icloud file/dir functions
 extension CloudStoreModule {
-
     struct ERRNotExist: LocalizedError {
         let path: String
         var errorDescription: String? {
             "folder of \"\(path)\" not exists, you need create it first"
         }
     }
-    // error message from `FileManager.default.copyItem` is misleading, when dest folder not exists, error message showed src path not exists, so manually modify error message
+
+    // error message from `FileManager.default.copyItem` is misleading, when dest folder not exists, error message showed src path not exists, so manually modify error message here
     private func copyItem(at: URL, to: URL) throws {
         let parentURL = to.deletingLastPathComponent()
         if FileManager.default.fileExists(atPath: parentURL.path) {
@@ -365,7 +393,6 @@ extension CloudStoreModule {
         }
     }
 
-    // TODO: I'm not too clearly know about the difference between using setUbiquitous(..) to move/delete icloud file and below way:
     @objc
     func unlink(_ path: String, resolver resolve: RCTPromiseResolveBlock,
                 rejecter reject: RCTPromiseRejectBlock) {
@@ -459,11 +486,74 @@ extension CloudStoreModule {
             reject("ERR_STAT", error.localizedDescription, NSError(domain: "", code: 0))
         }
     }
+
+    @objc
+    func evictUbiquitousItem(_ path: String, resolver resolve: RCTPromiseResolveBlock,
+               rejecter reject: RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
+        let fileFullUrl = URL(fileURLWithPath: path)
+        do {
+            try FileManager.default.evictUbiquitousItem(at: fileFullUrl);
+          resolve(nil);
+        } catch {
+           reject("ERR_EVICT", error.localizedDescription, NSError(domain: "", code: 0))
+        }
+    }
+
+    @objc
+    func startDownloadingUbiquitousItem(_ path: String, resolver resolve: RCTPromiseResolveBlock,
+               rejecter reject: RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
+        let fileFullUrl = URL(fileURLWithPath: path)
+        do {
+            try FileManager.default.startDownloadingUbiquitousItem(at: fileFullUrl);
+          resolve(nil);
+        } catch {
+           reject("ERR_DOWNLOAD_UB_ITEM", error.localizedDescription, NSError(domain: "", code: 0))
+        }
+    }
+
+    @objc
+    func setUbiquitous(_ flag: Bool, itemAt path: String, destination destPath: String,   resolver  resolve: @escaping RCTPromiseResolveBlock,
+     rejecter reject: @escaping  RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
+        let itemUrl = URL(fileURLWithPath: path)
+        let destUrl = URL(fileURLWithPath: destPath)
+
+        DispatchQueue.global(qos: .userInitiated).async {
+          do {
+            try FileManager.default.setUbiquitous(flag, itemAt: itemUrl, destinationURL: destUrl);
+              resolve(nil);
+          } catch {
+             reject("ERR_SET_UB", error.localizedDescription, NSError(domain: "", code: 0))
+          }
+        }
+    }
+
+    @objc
+    func getUrlForPublishingUbiquitousItem(_ path: String, expiration expirationTS: NSNumber, resolver resolve: RCTPromiseResolveBlock,
+               rejecter reject: RCTPromiseRejectBlock) {
+        if(icloudInvalid(then: reject)) {return}
+
+        let fileFullUrl = URL(fileURLWithPath: path)
+        let hasExpire = expirationTS != -1;
+        do {
+          
+            var date = hasExpire ? NSDate(timeIntervalSince1970: TimeInterval(Int(truncating: expirationTS) / 1000)) : nil;
+            let pt = AutoreleasingUnsafeMutablePointer<NSDate?>.init(&date)
+            let url = try FileManager.default.url(forPublishingUbiquitousItemAt: fileFullUrl, expiration: pt);
+          resolve(url.absoluteString);
+        } catch {
+           reject("ERR_PUB_UB", error.localizedDescription, NSError(domain: "", code: 0))
+        }
+    }
 }
 
-// MARK: upload, download
+// MARK: upload and download
 extension CloudStoreModule {
-
     ///  init and start query, when related events triggered then gather info from query
     /// - Parameters:
     ///   - queryCallback: this callback was used to gather data

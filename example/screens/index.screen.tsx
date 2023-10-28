@@ -5,7 +5,7 @@ import Button from '../components/Button';
 
 interface Props {}
 
-const IndexScreen: FC<Props> = ({}) => {
+const IndexScreen: FC<Props> = () => {
   const navigation = useNavigation<any>();
 
   return (
@@ -17,7 +17,6 @@ const IndexScreen: FC<Props> = ({}) => {
       {[
         {title: 'ios icloud', target: 'ios-icloud'},
         {title: 'ios key-value storage', target: 'ios-kv'},
-        {title: 'ios icloud issue', target: 'icloud-issue'},
       ].map(i => {
         return (
           <Button

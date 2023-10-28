@@ -1,5 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
-import { ScrollView, View } from 'react-native';
+import {KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import * as CloudStore from 'react-native-cloud-store';
 import {PathUtils, defaultICloudContainerPath} from 'react-native-cloud-store';
 import * as RNFS from 'react-native-fs';
@@ -13,57 +13,67 @@ interface Props {}
 
 const IOSICloudScreen: FC<Props> = ({}) => {
   useEffect(() => {
-    const r1 = CloudStore.registerGlobalDownloadEvent();
-    const r2 = CloudStore.registerGlobalUploadEvent();
+    const r1 = CloudStore.registerICloudIdentityDidChangeEvent();
+    const r2 = CloudStore.registerGlobalDownloadEvent();
+    const r3 = CloudStore.registerGlobalUploadEvent();
 
     return () => {
       r1?.remove();
       r2?.remove();
+      r3?.remove();
     };
   }, []);
 
   useEffect(() => {
-    const r1 = CloudStore.onICloudIdentityDidChange(u => {
+    const e1 = CloudStore.onICloudIdentityDidChange(u => {
       console.log(`onICloudIdentityDidChange:`, u);
     });
 
-    const r2 = CloudStore.onICloudDocumentsStartGathering(u => {
+    const e2 = CloudStore.onICloudDocumentsStartGathering(u => {
       console.log(`onICloudDocumentsStartGathering:`, u);
     });
 
-    const r3 = CloudStore.onICloudDocumentsGathering(u => {
+    const e3 = CloudStore.onICloudDocumentsGathering(u => {
       console.log(`onICloudDocumentsGathering:`, u);
     });
 
-    const r4 = CloudStore.onICloudDocumentsFinishGathering(u => {
+    const e4 = CloudStore.onICloudDocumentsFinishGathering(u => {
       console.log(`onICloudDocumentsFinishGathering:`, u);
     });
 
-    const r5 = CloudStore.onICloudDocumentsUpdateGathering(u => {
+    const e5 = CloudStore.onICloudDocumentsUpdateGathering(u => {
       console.log(`onICloudDocumentsUpdateGathering:`, u);
     });
 
     return () => {
-      r1.remove();
-      r2.remove();
-      r3.remove();
-      r4.remove();
-      r5.remove();
+      e1.remove();
+      e2.remove();
+      e3.remove();
+      e4.remove();
+      e5.remove();
     };
   }, []);
 
   return (
-    <View style={{
-      flex: 1
-    }}>
-      <ScrollView style={{
-        backgroundColor: 'skyblue',
-        width: '100%',
-        flexBasis: '40%'
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{
+        flex: 1,
       }}>
-        <DirReader baseDir={Dirs.DocumentDir} listHeight={80}/>
-        <DirReader baseDir={PathUtils.join(defaultICloudContainerPath, 'Documents')} listHeight={200} />
+      {/* Dir viewers */}
+      <ScrollView
+        style={{
+          backgroundColor: 'skyblue',
+          width: '100%',
+          flexBasis: '40%',
+        }}>
+        <DirReader baseDir={Dirs.DocumentDir} listHeight={80} />
+        <DirReader
+          baseDir={PathUtils.join(defaultICloudContainerPath, 'Documents')}
+          listHeight={200}
+        />
       </ScrollView>
+
       <ScrollView
         style={{flexGrow: 1}}
         contentContainerStyle={{
@@ -78,9 +88,9 @@ const IOSICloudScreen: FC<Props> = ({}) => {
         <View style={{height: 1, borderWidth: 1, borderColor: 'gray'}} />
         <Demo7 />
         <Demo10 />
+        <Demo11 />
       </ScrollView>
-    </View>
-
+    </KeyboardAvoidingView>
   );
 };
 
@@ -186,7 +196,7 @@ const Demo3 = () => {
     PathUtils.join(defaultICloudContainerPath, '/Documents/test-create'),
   );
   return (
-    <Block  label={'demo3'}>
+    <Block label={'demo3'}>
       <Input
         value={dirForCreate}
         onChangeText={setDirForCreate}
@@ -211,7 +221,7 @@ const Demo4 = () => {
   const [dirForMoveDest, setDirForMoveDest] = useState('');
 
   return (
-    <Block  label={'demo4'}>
+    <Block label={'demo4'}>
       <Input
         value={dirForMoveFrom}
         onChangeText={setDirForMoveFrom}
@@ -366,7 +376,7 @@ const Demo7 = () => {
   );
 
   return (
-    <Block  label={'demo7'}>
+    <Block label={'demo7'}>
       <Input
         value={fileForDownload}
         onChangeText={setFileForDownload}
@@ -463,7 +473,7 @@ const Demo10 = () => {
 
   return (
     <>
-      <Block  label={'demo10'}>
+      <Block label={'demo10'}>
         <Input
           value={fileForUpload}
           onChangeText={setFileForUpload}
@@ -485,6 +495,46 @@ const Demo10 = () => {
               console.log('upload called');
             } catch (e) {
               console.error('upload error:', e);
+            }
+          }}
+        />
+      </Block>
+    </>
+  );
+};
+const Demo11 = () => {
+  const [fileForShare, setFileForShare] = useState(
+    CloudStore.defaultICloudContainerPath + '/Documents/test-create/demo.txt',
+  );
+  const [expireSeconds, setExpireSeconds] = useState<number>();
+
+  return (
+    <>
+      <Block label={'demo11'}>
+        <Input
+          value={fileForShare}
+          onChangeText={setFileForShare}
+          placeholder={'icloud file path'}
+        />
+        <Input
+          value={expireSeconds?.toString()}
+          onChangeText={txt => {
+            setExpireSeconds(Number(txt));
+          }}
+          keyboardType={'numeric'}
+          placeholder={'expire seconds'}
+        />
+        <Button
+          title={'getUrlForPublishingUbiquitousItem'}
+          onPress={async () => {
+            try {
+              const url = await CloudStore.getUrlForPublishingUbiquitousItem(
+                fileForShare,
+                expireSeconds ? Date.now() + expireSeconds * 1000 : undefined,
+              );
+              console.log('url for sharing:', url);
+            } catch (e) {
+              console.error('getUrlForPublishingUbiquitousItem error:', e);
             }
           }}
         />

@@ -1,28 +1,36 @@
-
+/**
+ * A helper class for path manipulation
+ */
 export class PathUtils {
   static subPath(from: string, to: string): string {
-    from = suffixIf(prefixIf(from, "/"), "/");
-    to = suffixIf(prefixIf(to, "/"), "/");
+    from = suffixIf(prefixIf(from, '/'), '/');
+    to = suffixIf(prefixIf(to, '/'), '/');
 
-    if(!to.startsWith(from)) {
+    if (!to.startsWith(from)) {
       throw new Error(`${from} not a sub path to ${to}`);
     }
-    return prefixIf(rmSuffixIf(to.slice(from.length), "/"), '/');
+    return prefixIf(rmSuffixIf(to.slice(from.length), '/'), '/');
   }
 
   static join(...segments: string[]): string {
     return segments.reduce((acc, cur) => {
-      return acc + rmSuffixIf(prefixIf(cur, "/"), "/");
-    }, "");
+      return acc + rmSuffixIf(prefixIf(cur, '/'), '/');
+    }, '');
   }
 
-  // change ".xx.icloud" to "xx"
+  /**
+   * Change ".xx.icloud" to "xx"
+   */
   static iCloudRemoveDotExt(path: string) {
-    return path.replace(/(.*?)(\.(.*?)\.icloud)$/, "$1$3");
+    return path.replace(/(.*?)(\.(.*?)\.icloud)$/, '$1$3');
   }
 
+  /**
+   * Get path extension(no leading dot)
+   * @param path
+   */
   static ext(path: string) {
-    return path.split(".").pop();
+    return path.split('.').pop();
   }
 }
 
