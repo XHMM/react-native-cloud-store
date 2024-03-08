@@ -13,7 +13,7 @@ A full icloud path string without schema, for example:
 - ❌ `/my/file.txt`
 
 ### `LocalPath`
-A full file path string with or without schema, for example:
+A full file path string with or without schema from your application, for example:
 - ✅ `/path/to/app/documents/my/file.txt`
 - ✅ `file:///path/to/app/documents/my/file.txt`
 - ❌ `/my/file.txt`

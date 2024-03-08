@@ -3,6 +3,9 @@ title: Trouble Shooting
 sidebar_position: 4
 ---
 
+## Is there an article about using this library?
+Yeah, I wrote [an article here](https://medium.com/@xhmm/how-to-backup-realm-database-to-icloud-using-reactnative-9fd038a0a6b1) about using iCloud to backup your realm database.
+
 ## Why my folder and files not visible in iCloud drive folder?
 
 1. make sure your `NSUbiquitousContainers` config in `Info.plist` is correct

@@ -9,5 +9,5 @@ This package is still in development and won't **be stable until version 1.0.0 r
 
 This package aims to provide a wrapper for cloud-related operations:
 - For iOS: iCloudDrive (**you need a paid apple developer account**)
-- For Android: planning ...
-- For Both: planning ...
+- For Android: planning ... (maybe out of plan)
+- For Both: planning ... (maybe out of plan)
