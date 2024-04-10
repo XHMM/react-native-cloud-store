@@ -3,15 +3,15 @@ title: Install with Expo
 sidebar_position: 1
 ---
 
-**You need to [prebuild](https://docs.expo.dev/workflow/expo-cli/#expo-prebuild) your project when using with expo**
+**When using Expo, it's necessary to create a [development build](https://docs.expo.dev/develop/development-builds/create-a-build/) and [prebuild](https://docs.expo.dev/workflow/prebuild/) your project.**
 
-## Step1
+## Step 1: Install the package
 ```bash
-npm install react-native-cloud-store
+npx expo install react-native-cloud-store
 ```
 
-## Step2
-Edit your expo config file `app.json`/`app.config.js`:
+## Step 2: Plugin configuration
+Edit your Expo config file `app.json`/`app.config.js`:
 ```js
 module.exports = () => ({
   // ...
@@ -21,33 +21,39 @@ module.exports = () => ({
       {
         iCloud: {
           kv: {
-            enabled: true,
+            enabled: true
           },
           documents: [
             {
-              containerId: `iCloud.xxxx`,
+              containerId: "iCloud.xxxx",
               enabled: true,
               visible: true,
-              visibleName: `myDisplayName`,
+              visibleName: "myDisplayName"
             },
             {
-              containerId: `iCloud.xxxx2`,
+              containerId: "iCloud.xxxx2",
               enabled: true,
               visible: false
             }
-          ],
-        },
-      },
-    ],
+          ]
+        }
+      }
+    ]
   ],
 });
+
 ```
 
-## Step3
+## Step 3: Prebuild
 1. Run the following command to prebuild your project:
   ```shell
-  expo prebuild
+  npx expo prebuild
   ```
-2. At the first time, you need to make sure iCloud containers were created, so now open your `ios` folder using XCode, make sure the selected containers were not in red color which means not created yet, if color was red, just click arrow-7 to refresh:
+2. Verify the creation of your iCloud containers. Open the 'ios' folder in XCode, and ensure the containers you've selected are not highlighted in red, indicating they haven't been created. If any container appears in red, simply click the 'Refresh' button (represented by arrow-7) to update.:
      ![check-container-status](/images/check-container-status.png)
 
+## Step 4: Build
+You will now need to [build](https://docs.expo.dev/build/setup/#run-a-build) your project.
+  ```shell
+  eas build --profile development
+  ```
