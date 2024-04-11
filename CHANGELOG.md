@@ -1,3 +1,6 @@
+## 0.12.0
+- feat: add [Apple Privacy manifest](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files)
+
 ## 0.11.0
 - refactor: this module doesn't listen events when initiated anymore, you need to call event registers manually.
 - feat: expose `evictUbiquitousItem`

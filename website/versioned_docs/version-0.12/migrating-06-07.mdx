@@ -1,0 +1,59 @@
+---
+title: Migrating from 0.6 to 0.7
+sidebar_position: 101
+---
+
+- **breaking:** `iCloudContainerPath` renamed to `defaultICloudContainerPath`
+- **breaking:** `persist` renamed to `download`
+- **breaking:** icloud path **do not support** relative path now, you must pass an absolute path, for example:
+  ```js
+    import CloudStore from 'react-native-cloud-store';
+    // before
+    CloudStore.stat('Documents/sth.txt')
+
+    // after
+    const myContainerId = CloudStore.defaultICloudContainerPath
+    CloudStore.stat(myContainerId + '/Documents/sth.txt')
+    // you can use helper method to handle path join
+    CloudStore.stat(CloudStore.PathUtils.join(myContainerId, 'Documents/sth.txt'))
+  ```
+
+
+- **breaking:** when using with expo, you need update your app config file, change `documents` from object to array:
+  ```js
+  // before
+  module.exports = () => {
+    return {
+      // ...
+      plugins: [
+        [
+          "react-native-cloud-store",
+          {
+            iCloud: {
+              documents: { containerId: `iCloud.xxx` }
+            }
+          }
+        ]
+      ]
+    }
+  }
+
+  // after
+  module.exports = () => {
+    return {
+      // ...
+      plugins: [
+        [
+          "react-native-cloud-store",
+          {
+            iCloud: {
+              documents: [
+                { containerId: `iCloud.xxx` }
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  }
+  ```
